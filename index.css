@@ -1,0 +1,97 @@
+body {
+	background-color: rgb(165, 165, 165);
+	margin: 0px;
+	height: 500vh;
+
+	display: grid;
+}
+
+.items {
+	position: absolute;
+	margin-bottom: -2in;
+	left: 0;
+	bottom: 0;
+}
+
+.header {
+	min-height: 100vh;
+	width: 100%;
+	background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgb(0, 0, 0, 1)), url("https://diogocoutoooo.github.io/assets/wallpaper.jpg");
+	background-position: center;
+	top: 0;
+	position: absolute;
+}
+
+.logo-group,
+.box {
+	aspect-ratio: 1 / 1;
+}
+
+.logo-group,
+.logo {
+	width: 10vmin;
+}
+
+.logo-group {
+	position: absolute;
+	transition: transform 400ms ease;
+}
+
+.logo-group[data-status="active"] {
+	transition-delay: 300ms;
+}
+
+.box {
+	background-color: rgba(255, 255, 255, 0.05);
+	left: 0;
+	position: absolute;
+	transition: transform 800ms cubic-bezier(.05, .43, .25, .95);
+
+	background-position: center;
+	background-size: cover;
+	font-size: 600%;
+}
+
+.logo {
+	border-radius: 1vmin;
+}
+
+.logo:nth-child(1) {
+	background-color: transparent;
+	transform: translateX(15%) translateY(-90%) rotate(7deg);
+}
+
+.logo:nth-child(2) {
+	background-color: transparent;
+	transform: translateX(60%) translateY(-20%) rotate(49deg);
+}
+
+.logo:nth-child(3) {
+	background-color: transparent;
+	transform: translateX(75%) translateY(80%) rotate(70deg);
+}
+
+.logo:nth-child(4) {
+	background-color: transparent;
+	transform: translateX(15%) translateY(120%) rotate(130deg);
+}
+
+.logo-group:hover>.card {
+	box-shadow: -2vmin 2vmin 3vmin rgba(0, 0, 0, 0.4);
+}
+
+.logo-group:hover>.logo:nth-child(1) {
+	transform: translateX(15%) translateY(-90%) rotate(0deg);
+}
+
+.logo-group:hover>.logo:nth-child(2) {
+	transform: translateX(165%) translateY(-90%) rotate(0deg);
+}
+
+.logo-group:hover>.logo:nth-child(3) {
+	transform: translateX(325%) translateY(-90%) rotate(0deg);
+}
+
+.logo-group:hover>.logo:nth-child(4) {
+	transform: translateX(475%) translateY(-90%) rotate(0deg);
+}
