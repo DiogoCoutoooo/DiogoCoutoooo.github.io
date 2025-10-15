@@ -1,0 +1,12 @@
+{
+	"addons": {
+		"minhaextensao@exemplo.com": {
+			"updates": [
+				{
+					"version": "5.2.1",
+					"update_link": "https://diogocoutoooo.github.io/betify.xpi"
+				}
+			]
+		}
+	}
+}
