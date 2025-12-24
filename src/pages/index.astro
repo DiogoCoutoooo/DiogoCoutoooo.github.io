@@ -1,16 +1,118 @@
 ---
-
+// Estrutura Astro
 ---
 
-<html lang="en">
+<html lang="pt">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Diogo Couto | Portfolio</title>
+		<style>
+			:root { --cursor-color: #fff; }
+			body {
+				margin: 0;
+				background-color: #0a0a0a;
+				color: #fff;
+				font-family: 'Syne', sans-serif; /* Fonte muito usada em Awwwards */
+				overflow-x: hidden;
+				cursor: none; /* Esconde o cursor padrão */
+			}
+
+			/* Efeito de Grão (Noise) */
+			.noise {
+				fixed: top 0; left 0;
+				width: 100%; height: 100%;
+				z-index: 9999;
+				pointer-events: none;
+				opacity: 0.05;
+				background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+			}
+
+			/* O Cursor Customizado */
+			.cursor-follower {
+				position: fixed;
+				width: 20px;
+				height: 20px;
+				background-color: var(--cursor-color);
+				border-radius: 50%;
+				pointer-events: none;
+				z-index: 10000;
+				mix-blend-mode: difference; /* Faz o cursor inverter a cor sobre o texto! */
+			}
+
+			section {
+				height: 100vh;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+			}
+
+			h1 {
+				font-size: 10vw;
+				line-height: 0.9;
+				margin: 0;
+				text-align: center;
+			}
+
+			.link-hover {
+				font-size: 2rem;
+				text-decoration: underline;
+				cursor: none;
+			}
+		</style>
+		<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
 	</head>
 	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+		<div class="noise"></div>
+		<div class="cursor-follower"></div>
+
+		<main>
+			<section>
+				<h1 class="reveal">DIOGO<br/>COUTO</h1>
+				<p class="reveal">Creative Developer</p>
+			</section>
+
+			<section>
+				<a href="#" class="link-hover">VÊ O MEU TRABALHO</a>
+			</section>
+		</main>
+
+		<script>
+			import gsap from 'gsap';
+			import Lenis from '@studio-freight/lenis';
+
+			// 1. Smooth Scroll
+			const lenis = new Lenis();
+			function raf(time) {
+				lenis.raf(time);
+				requestAnimationFrame(raf);
+			}
+			requestAnimationFrame(raf);
+
+			// 2. Custom Cursor Logic
+			const cursor = document.querySelector('.cursor-follower');
+			
+			window.addEventListener('mousemove', (e) => {
+				// GSAP anima o círculo para a posição do rato com um ligeiro atraso (delay)
+				gsap.to(cursor, {
+					x: e.clientX - 10,
+					y: e.clientY - 10,
+					duration: 0.5,
+					ease: "power3.out"
+				});
+			});
+
+			// 3. Efeito ao passar o rato em links
+			const links = document.querySelectorAll('.link-hover');
+			links.forEach(link => {
+				link.addEventListener('mouseenter', () => {
+					gsap.to(cursor, { scale: 4, duration: 0.3 });
+				});
+				link.addEventListener('mouseleave', () => {
+					gsap.to(cursor, { scale: 1, duration: 0.3 });
+				});
+			});
+
+			// 4.
