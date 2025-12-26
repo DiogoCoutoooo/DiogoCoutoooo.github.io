@@ -1,6 +1,9 @@
 ---
 // src/pages/index.astro
-import ThreeScene from '../components/ThreeScene.astro';
+import PianoScene from '../components/PianoScene.astro';
+// Piano components are kept but not rendered on this page as requested
+// import Piece from '../components/Piece.astro';
+// import { MY_PIECE } from '../constants/melodies';
 ---
 <html lang="pt">
     <head>
@@ -18,6 +21,17 @@ import ThreeScene from '../components/ThreeScene.astro';
                 overflow-x: hidden;
                 cursor: none;
                 position: relative;
+            }
+
+            /* Esconder barra de scroll para Chrome, Safari e Opera */
+            ::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Esconder barra de scroll para IE, Edge e Firefox */
+            html {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
             }
 
             /* Grelha de Engenharia Subtil */
@@ -128,7 +142,7 @@ import ThreeScene from '../components/ThreeScene.astro';
             }
 
             section { width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; }
-            .cap-1 { min-height: 160vh; background-color: transparent; } /* Permitir ver a grelha do body */
+            .cap-1 { min-height: 110vh; background-color: transparent; } /* Reduzido para o texto aparecer mais cedo */
             .cap-2 { height: 100vh; background-color: #0f0f0f; justify-content: center; }
             .cap-3 { height: 100vh; background-color: #141414; justify-content: center; }
 
@@ -162,22 +176,60 @@ import ThreeScene from '../components/ThreeScene.astro';
 			    width: 100%;
 			}
 
-			.biography {
-			    flex: 1; /* Ocupa o espaço da esquerda */
-			    font-size: 2.5rem;
-			    line-height: 1.2;
-			}
+			.bio-freeze-section {
+                height: 400vh;
+                background: transparent;
+                width: 100%;
+                position: relative;
+                z-index: 5;
+            }
+
+            .bio-content-pin {
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                max-width: 750px; /* Ainda mais estreito para margens maiores */
+                margin: 0 auto;
+                padding: 0 4vw;
+                box-sizing: border-box;
+            }
+
+            .bio-row {
+                display: flex;
+                justify-content: center;
+                gap: 2vw;
+                margin: 0.2em 0;
+            }
+
+            .bio-word {
+                font-size: clamp(1.2rem, 3.8vw, 4.8rem); /* Fonte menor e mais elegante */
+                font-weight: 800;
+                color: #fff;
+                opacity: 0;
+                letter-spacing: -0.01em;
+                line-height: 1.2;
+                white-space: nowrap;
+                text-transform: uppercase;
+            }
+
+            .bio-word span {
+                color: #fff;
+                text-shadow: 0 0 50px rgba(255,255,255,0.4);
+            }
 
 			/* Contentor específico para a figura 3D */
 			.canvas-wrapper {
-			    width: 100vw; /* Ocupa a largura total da janela */
+			    width: 100vw;
 			    left: 50%;
 			    right: 50%;
 			    margin-left: -50vw;
 			    margin-right: -50vw;
-			    height: 600px; /* Reduzi um pouco para não cortar no scroll, ajuste se necessário */
+			    height: 850px;
 			    position: relative;
-			    overflow: hidden;
+			    overflow: visible;
 			}
 
 			/* Garante que o container interno acompanhe */
@@ -208,16 +260,24 @@ import ThreeScene from '../components/ThreeScene.astro';
                     <p class="sub-info">[ Computer Science & Cyber Security ]</p>
                 </div>
 
-                <div class="content-block">
-					<div class="biography-container">
-				        <p class="biography">
-				            A construir sistemas <span>seguros</span>, arquiteturas <span>robustas</span> e experiências que não podem ser <span>quebradas</span>.
-				        </p>
-				        
-				        <div class="canvas-wrapper">
-				            <ThreeScene />
-				        </div>
-				    </div>
+				<div class="bio-freeze-section" id="bio-trigger">
+                    <div class="bio-content-pin">
+                        <div class="bio-row">
+                            <span class="bio-word">LOREM</span>
+                            <span class="bio-word">IPSUM</span>
+                            <span class="bio-word">DOLOR</span>
+                            <span class="bio-word">SIT</span>
+                        </div>
+                        <div class="bio-row">
+                            <span class="bio-word">AMET</span>
+                            <span class="bio-word">CONSECTETUR</span>
+                        </div>
+                        <div class="bio-row">
+                            <span class="bio-word">ADIPISCING</span>
+                            <span class="bio-word">ELIT</span>
+                            <span class="bio-word">DOREM.</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="sticky-bar" data-target="#cap1">
@@ -248,7 +308,14 @@ import ThreeScene from '../components/ThreeScene.astro';
             gsap.registerPlugin(ScrollTrigger);
 
             const lenis = new Lenis();
-            function raf(time: number) { lenis.raf(time); requestAnimationFrame(raf); }
+            
+            // Sincroniza o ScrollTrigger com o Lenis
+            lenis.on('scroll', ScrollTrigger.update);
+            
+            function raf(time: number) { 
+                lenis.raf(time); 
+                requestAnimationFrame(raf); 
+            }
             requestAnimationFrame(raf);
 
             const heroTitle = document.getElementById('hero-title') as HTMLElement;
@@ -299,9 +366,42 @@ import ThreeScene from '../components/ThreeScene.astro';
             }
 
             window.addEventListener('load', async () => {
-                await decryptCoords();
-                await updateStatus();
+                //await decryptCoords();
+                //await updateStatus();
                 triggerRandomGlitch();
+
+                // --- ANIMATION: BIO FREEZE REVEAL ---
+                const words = document.querySelectorAll('.bio-word');
+                
+                gsap.set(words, { y: "100vh", opacity: 0 });
+
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: "#bio-trigger",
+                        start: "top 30%", // Inicia muito mais cedo (30% do ecrã)
+                        end: "+=3000",
+                        pin: true,
+                        scrub: 0.8,
+                    }
+                });
+
+                // Entrada das palavras (Começa IMEDIATAMENTE no início do freeze)
+                tl.to(words, {
+                    y: 0,
+                    opacity: 1,
+                    stagger: 0.1,
+                    ease: "power2.out",
+                    duration: 1.2
+                }, 0.1); // Delay mínimo para iniciar logo
+
+                // Saída (Fluidez total)
+                tl.to(words, {
+                    opacity: 0,
+                    y: "-20vh",
+                    stagger: 0.05,
+                    ease: "power2.in",
+                    duration: 1
+                }, "+=0.5");
             });
 
             window.addEventListener('mousemove', (e) => {

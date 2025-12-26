@@ -1,0 +1,35 @@
+
+---
+import { MY_PIECE } from '../constants/melodies';
+
+interface Props {
+    data?: any[];
+    autoPlay?: boolean;
+    delay?: number;
+}
+
+const { data = MY_PIECE, autoPlay = true, delay = 2000 } = Astro.props;
+---
+
+<div class="piano-piece-controller" data-piece={JSON.stringify(data)} data-autoplay={autoPlay} data-delay={delay}>
+    <!-- Este componente não tem representação visual, apenas lógica -->
+</div>
+
+<script>
+    const controllers = document.querySelectorAll('.piano-piece-controller');
+    
+    controllers.forEach(ctrl => {
+        const piece = JSON.parse(ctrl.getAttribute('data-piece') || '[]');
+        const autoPlay = ctrl.getAttribute('data-autoplay') === 'true';
+        const delay = parseInt(ctrl.getAttribute('data-delay') || '2000');
+
+        if (autoPlay && piece.length > 0) {
+            setTimeout(() => {
+                // Disparamos um evento customizado que o PianoScene está a ouvir
+                window.dispatchEvent(new CustomEvent('piano:playPiece', { 
+                    detail: piece 
+                }));
+            }, delay);
+        }
+    });
+</script>
