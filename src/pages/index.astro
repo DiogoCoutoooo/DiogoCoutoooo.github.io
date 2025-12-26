@@ -2,8 +2,10 @@
 // src/pages/index.astro
 import PianoScene from '../components/PianoScene.astro';
 // Piano components are kept but not rendered on this page as requested
-// import Piece from '../components/Piece.astro';
-// import { MY_PIECE } from '../constants/melodies';
+import Piece from '../components/Piece.astro';
+import { MY_PIECE } from '../constants/melodies';
+import { Image } from 'astro:assets';
+import profileImage from '../assets/images/bimpson.jpg';
 ---
 <html lang="pt">
     <head>
@@ -191,10 +193,11 @@ import PianoScene from '../components/PianoScene.astro';
                 align-items: center;
                 justify-content: center;
                 width: 100%;
-                max-width: 750px; /* Ainda mais estreito para margens maiores */
+                max-width: 1300px; /* Aumentado para dar mais espaço lateral */
                 margin: 0 auto;
                 padding: 0 4vw;
                 box-sizing: border-box;
+                transform: translateY(-25vh); /* Pequeno ajuste global para centragem */
             }
 
             .bio-row {
@@ -205,7 +208,7 @@ import PianoScene from '../components/PianoScene.astro';
             }
 
             .bio-word {
-                font-size: clamp(1.2rem, 3.8vw, 4.8rem); /* Fonte menor e mais elegante */
+                font-size: clamp(3rem, 12vw, 12rem); /* Fonte significativamente maior */
                 font-weight: 800;
                 color: #fff;
                 opacity: 0;
@@ -219,6 +222,89 @@ import PianoScene from '../components/PianoScene.astro';
                 color: #fff;
                 text-shadow: 0 0 50px rgba(255,255,255,0.4);
             }
+
+            /* --- PHOTO & CONSOLE --- */
+            .bio-top-grid {
+                display: grid;
+                grid-template-columns: 1fr 1.5fr;
+                gap: 220px; 
+                width: 100%;
+                margin-bottom: 15vh; /* Empurra o texto Who Am I para baixo */
+                align-items: center;
+            }
+
+            .photo-placeholder {
+                width: 100%;
+                aspect-ratio: 4/5;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .photo-placeholder img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.8;
+                filter: grayscale(100%) contrast(1.2);
+                transition: opacity 0.5s, filter 0.5s;
+            }
+
+            .photo-placeholder:hover img {
+                opacity: 1;
+                filter: grayscale(0%) contrast(1);
+            }
+
+            .photo-placeholder::after {
+                content: "";
+            }
+
+            .bio-console {
+                background: rgba(0, 0, 0, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+                font-family: 'JetBrains Mono', monospace;
+                padding: 15px;
+                height: 250px;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+            }
+
+            .console-header {
+                display: flex;
+                gap: 6px;
+                margin-bottom: 12px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                padding-bottom: 8px;
+            }
+
+            .dot { width: 8px; height: 8px; border-radius: 50%; background: #333; }
+            .dot.red { background: #ff5f56; }
+            .dot.yellow { background: #ffbd2e; }
+            .dot.green { background: #27c93f; }
+
+            .console-text {
+                font-size: 0.9rem;
+                line-height: 1.5;
+                color: #00ff41;
+                text-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
+            }
+
+            .cursor-blink {
+                display: inline-block;
+                width: 8px;
+                height: 15px;
+                background: #00ff41;
+                margin-left: 4px;
+                animation: blink 1s step-end infinite;
+            }
+
+            @keyframes blink { 50% { opacity: 0; } }
 
 			/* Contentor específico para a figura 3D */
 			.canvas-wrapper {
@@ -262,23 +348,29 @@ import PianoScene from '../components/PianoScene.astro';
 
 				<div class="bio-freeze-section" id="bio-trigger">
                     <div class="bio-content-pin">
-                        <div class="bio-row">
-                            <span class="bio-word">LOREM</span>
-                            <span class="bio-word">IPSUM</span>
-                            <span class="bio-word">DOLOR</span>
-                            <span class="bio-word">SIT</span>
+                        <div class="bio-top-grid">
+                            <div class="photo-placeholder" id="bio-photo">
+                                <Image src={profileImage} alt="Diogo Couto" />
+                            </div>
+                            <div class="bio-console" id="bio-console">
+                                <div class="console-header">
+                                    <div class="dot red"></div>
+                                    <div class="dot yellow"></div>
+                                    <div class="dot green"></div>
+                                    <span style="font-size: 0.6rem; opacity: 0.4; margin-left: 10px;">identity_v2.terminal</span>
+                                </div>
+                                <div class="console-text" id="console-typing-area">
+                                    <span id="typed-text"></span><span class="cursor-blink"></span>
+                                </div>
+                            </div>
                         </div>
                         <div class="bio-row">
-                            <span class="bio-word">AMET</span>
-                            <span class="bio-word">CONSECTETUR</span>
-                        </div>
-                        <div class="bio-row">
-                            <span class="bio-word">ADIPISCING</span>
-                            <span class="bio-word">ELIT</span>
-                            <span class="bio-word">DOREM.</span>
+                            <span class="bio-word">WHO</span>
+                            <span class="bio-word">AM</span>
+                            <span class="bio-word">I?</span>
                         </div>
                     </div>
-                </div>
+                </div> 
 
                 <div class="sticky-bar" data-target="#cap1">
                     <button class="nav-button"><div class="arrow-up"></div><span>Root_Directory</span></button>
@@ -366,38 +458,63 @@ import PianoScene from '../components/PianoScene.astro';
             }
 
             window.addEventListener('load', async () => {
-                //await decryptCoords();
-                //await updateStatus();
+                await decryptCoords();
+                await updateStatus();
                 triggerRandomGlitch();
 
                 // --- ANIMATION: BIO FREEZE REVEAL ---
                 const words = document.querySelectorAll('.bio-word');
+                const photo = document.getElementById('bio-photo');
+                const consoleEl = document.getElementById('bio-console');
+                const typedTextEl = document.getElementById('typed-text');
+
+                const bioMessage = "I’m a CS student who lives for the logic of a well-solved problem. Whether it's building an app from scratch or debugging a mess of code, I actually enjoy the challenge. I’m always down to pick up whatever tech comes my way—I just want to build cool stuff.";
                 
                 gsap.set(words, { y: "100vh", opacity: 0 });
+                gsap.set(photo, { x: "-100vw", opacity: 0 });
+                gsap.set(consoleEl, { x: "100vw", opacity: 0 });
 
                 const tl = gsap.timeline({
                     scrollTrigger: {
                         trigger: "#bio-trigger",
-                        start: "top 30%", // Inicia muito mais cedo (30% do ecrã)
+                        start: "top 30%", 
                         end: "+=3000",
                         pin: true,
                         scrub: 0.8,
                     }
                 });
 
-                // Entrada das palavras (Começa IMEDIATAMENTE no início do freeze)
+                // Entrada dos elementos laterais
+                tl.to([photo, consoleEl], {
+                    x: 0,
+                    opacity: 1,
+                    duration: 1.5,
+                    ease: "power3.out"
+                }, 0);
+
+                // Entrada das palavras
                 tl.to(words, {
                     y: 0,
                     opacity: 1,
                     stagger: 0.1,
                     ease: "power2.out",
                     duration: 1.2
-                }, 0.1); // Delay mínimo para iniciar logo
+                }, 0.5);
 
-                // Saída (Fluidez total)
-                tl.to(words, {
+                // Efeito de escrita no terminal (Typewriter)
+                tl.to({}, {
+                    duration: 2,
+                    onUpdate: function() {
+                        const progress = this.progress();
+                        const len = Math.floor(bioMessage.length * progress);
+                        if (typedTextEl) typedTextEl.innerText = bioMessage.substring(0, len);
+                    }
+                }, 0.8);
+
+                // Saída
+                tl.to([words, photo, consoleEl], {
                     opacity: 0,
-                    y: "-20vh",
+                    y: "-10vh",
                     stagger: 0.05,
                     ease: "power2.in",
                     duration: 1
