@@ -143,6 +143,31 @@ import profileImage from '../assets/images/bimpson.jpg';
                 border-radius: 50%; pointer-events: none; z-index: 10000; mix-blend-mode: difference;
             }
 
+            .boot-progress-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 0%;
+                height: 2px;
+                background: #ff4d4d;
+                z-index: 10001;
+                transition: background 0.5s;
+            }
+
+            .boot-progress-bar.loaded {
+                background: #00ff41;
+            }
+
+            .scroll-indicator-label {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.6rem;
+                letter-spacing: 0.1em;
+                margin-left: 20px;
+                padding: 2px 8px;
+                border: 1px solid currentColor;
+                opacity: 0.8;
+            }
+
             section { width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; }
             .cap-1 { min-height: 110vh; background-color: transparent; } /* Reduzido para o texto aparecer mais cedo */
             .cap-2 { height: 100vh; background-color: #0f0f0f; justify-content: center; }
@@ -169,6 +194,12 @@ import profileImage from '../assets/images/bimpson.jpg';
             .is-locked .nav-button { opacity: 0.6; }
             .is-locked .nav-button:hover { opacity: 1; }
             .arrow-up { width: 6px; height: 6px; border-left: 2px solid #fff; border-top: 2px solid #fff; transform: rotate(45deg); }
+
+            body.scroll-locked {
+                overflow: hidden !important;
+                height: 100vh;
+                overscroll-behavior: none;
+            }
 
 			.biography-container {
 			    display: flex;
@@ -243,6 +274,7 @@ import profileImage from '../assets/images/bimpson.jpg';
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                opacity: 0; /* Começa escondido */
             }
 
             .photo-placeholder img {
@@ -273,6 +305,7 @@ import profileImage from '../assets/images/bimpson.jpg';
                 display: flex;
                 flex-direction: column;
                 position: relative;
+                opacity: 0; /* Começa escondido */
             }
 
             .console-header {
@@ -331,13 +364,17 @@ import profileImage from '../assets/images/bimpson.jpg';
         </style>
     </head>
     <body>
+        <div class="boot-progress-bar" id="boot-bar"></div>
         <div class="noise-overlay"></div>
         <div class="cursor-follower"></div>
 
         <main>
             <section id="cap1" class="cap-1">
                 <div class="tech-details">
-                    <span id="status-line" class="status-decrypting">STATUS: DECRYPTING_</span>
+                    <div style="display: flex; align-items: center;">
+                        <span id="status-line" class="status-decrypting">STATUS: DECRYPTING_</span>
+                        <span id="scroll-status" class="scroll-indicator-label status-decrypting">SCROLL_LOCKED</span>
+                    </div>
                     <span id="coords-line" data-value="LOC: 38.7223° N, 9.1393° W">LOC: XX.XXXX° X, X.XXXX° X</span>
                 </div>
 
@@ -458,22 +495,67 @@ import profileImage from '../assets/images/bimpson.jpg';
             }
 
             window.addEventListener('load', async () => {
-                await decryptCoords();
-                await updateStatus();
-                triggerRandomGlitch();
-
-                // --- ANIMATION: BIO FREEZE REVEAL ---
+                // --- INITIAL STATE SETUP --- 
+                // Colocamos isto aqui ANTES dos awaits para garantir que nada aparece antes de tempo
                 const words = document.querySelectorAll('.bio-word');
                 const photo = document.getElementById('bio-photo');
                 const consoleEl = document.getElementById('bio-console');
                 const typedTextEl = document.getElementById('typed-text');
-
-                const bioMessage = "I’m a CS student who lives for the logic of a well-solved problem. Whether it's building an app from scratch or debugging a mess of code, I actually enjoy the challenge. I’m always down to pick up whatever tech comes my way—I just want to build cool stuff.";
                 
+                const bioMessage = "I’m a CS student who lives for the logic of a well-solved problem. Whether it's building an app from scratch or debugging a mess of code, I actually enjoy the challenge. I’m always down to pick up whatever tech comes my way—I just want to build cool stuff.";
+
                 gsap.set(words, { y: "100vh", opacity: 0 });
                 gsap.set(photo, { x: "-100vw", opacity: 0 });
                 gsap.set(consoleEl, { x: "100vw", opacity: 0 });
 
+                // Bloquear scroll inicial
+                lenis.stop();
+                document.body.classList.add('scroll-locked');
+                
+                const preventScroll = (e: Event) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                };
+
+                const blockKeys = (e: KeyboardEvent) => {
+                    const keys = ['ArrowUp', 'ArrowDown', 'Space', ' ', 'PageUp', 'PageDown', 'Home', 'End'];
+                    if (keys.includes(e.key)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                };
+
+                window.addEventListener('wheel', preventScroll, { passive: false });
+                window.addEventListener('touchmove', preventScroll, { passive: false });
+                window.addEventListener('keydown', blockKeys, { passive: false });
+
+                const bootBar = document.getElementById('boot-bar');
+                const scrollStatusLine = document.getElementById('scroll-status');
+
+                // Animação da barra de progresso (fingida para acompanhar os waits)
+                gsap.to(bootBar, { width: "100%", duration: 4, ease: "none" });
+
+                // Agora sim, arrancamos com as animações de texto da Hero
+                await decryptCoords();
+                await updateStatus();
+                
+                // Desbloquear e atualizar UI
+                window.removeEventListener('wheel', preventScroll);
+                window.removeEventListener('touchmove', preventScroll);
+                window.removeEventListener('keydown', blockKeys);
+                document.body.classList.remove('scroll-locked');
+                
+                lenis.start();
+                if (bootBar) bootBar.classList.add('loaded');
+                if (scrollStatusLine) {
+                    scrollStatusLine.innerText = "ACCESS_GRANTED";
+                    scrollStatusLine.classList.replace('status-decrypting', 'status-secured');
+                }
+                
+                triggerRandomGlitch();
+
+                // --- ANIMATION: BIO FREEZE REVEAL ---
                 const tl = gsap.timeline({
                     scrollTrigger: {
                         trigger: "#bio-trigger",
