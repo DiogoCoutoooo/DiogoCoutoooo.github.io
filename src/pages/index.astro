@@ -492,11 +492,25 @@ import profileImage from '../assets/images/bimpson.jpg';
                     await new Promise(r => setTimeout(r, 80));
                 }
                 statusEl.classList.replace('status-decrypting', 'status-secured');
+                
+                // Sincronização imediata da barra e do status de scroll
+                const bootBar = document.getElementById('boot-bar');
+                const scrollStatusLine = document.getElementById('scroll-status');
+                if (bootBar) bootBar.classList.add('loaded');
+                if (scrollStatusLine) {
+                    scrollStatusLine.innerText = "ACCESS_GRANTED";
+                    scrollStatusLine.classList.replace('status-decrypting', 'status-secured');
+                }
             }
 
             window.addEventListener('load', async () => {
                 // --- INITIAL STATE SETUP --- 
-                // Colocamos isto aqui ANTES dos awaits para garantir que nada aparece antes de tempo
+                // Impede o browser de restaurar a posição do scroll ao dar refresh
+                if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
+                }
+                lenis.scrollTo(0, { immediate: true });
+
                 const words = document.querySelectorAll('.bio-word');
                 const photo = document.getElementById('bio-photo');
                 const consoleEl = document.getElementById('bio-console');
@@ -533,26 +547,23 @@ import profileImage from '../assets/images/bimpson.jpg';
                 const bootBar = document.getElementById('boot-bar');
                 const scrollStatusLine = document.getElementById('scroll-status');
 
-                // Animação da barra de progresso (fingida para acompanhar os waits)
-                gsap.to(bootBar, { width: "100%", duration: 4, ease: "none" });
+                // Animação da barra de progresso (fingida até 95%)
+                const barTween = gsap.to(bootBar, { width: "100%", duration: 5.5, ease: "power1.inOut" });
 
                 // Agora sim, arrancamos com as animações de texto da Hero
                 await decryptCoords();
                 await updateStatus();
                 
-                // Desbloquear e atualizar UI
+                // Desbloquear scroll
+                barTween.kill();
+                if (bootBar) bootBar.style.width = "100%";
+                
                 window.removeEventListener('wheel', preventScroll);
                 window.removeEventListener('touchmove', preventScroll);
                 window.removeEventListener('keydown', blockKeys);
                 document.body.classList.remove('scroll-locked');
                 
                 lenis.start();
-                if (bootBar) bootBar.classList.add('loaded');
-                if (scrollStatusLine) {
-                    scrollStatusLine.innerText = "ACCESS_GRANTED";
-                    scrollStatusLine.classList.replace('status-decrypting', 'status-secured');
-                }
-                
                 triggerRandomGlitch();
 
                 // --- ANIMATION: BIO FREEZE REVEAL ---
