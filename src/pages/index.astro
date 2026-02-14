@@ -1,9 +1,5 @@
 ---
 // src/pages/index.astro
-import PianoScene from '../components/PianoScene.astro';
-// Piano components are kept but not rendered on this page as requested
-import Piece from '../components/Piece.astro';
-import { MY_PIECE } from '../constants/melodies';
 import { Image } from 'astro:assets';
 import profileImage from '../assets/images/bimpson.jpg';
 ---
@@ -341,21 +337,19 @@ import profileImage from '../assets/images/bimpson.jpg';
 
 			/* Contentor específico para a figura 3D */
 			.canvas-wrapper {
-			    width: 100vw;
-			    left: 50%;
-			    right: 50%;
-			    margin-left: -50vw;
-			    margin-right: -50vw;
+			    width: 100%;
 			    height: 850px;
 			    position: relative;
+			    z-index: 50; /* Garantir que está acima de elementos da Bio */
 			    overflow: visible;
+                pointer-events: auto;
 			}
 
 			/* Garante que o container interno acompanhe */
 			#three-canvas-container {
-			    width: 100% !important;
-			    height: 100% !important;
-			    cursor: grab; /* Feedback visual que o objeto é interativo */
+			    width: 100%;
+			    height: 100%;
+			    cursor: grab;
 			}
 
 			#three-canvas-container:active {
@@ -416,6 +410,7 @@ import profileImage from '../assets/images/bimpson.jpg';
 
             <section id="cap2" class="cap-2">
                 <h2 style="font-size: 10vw;">PROJECTS</h2>
+
                 <div class="sticky-bar" data-target="#cap2">
                     <button class="nav-button"><div class="arrow-up"></div><span>Security_Audit</span></button>
                 </div>
@@ -533,7 +528,7 @@ import profileImage from '../assets/images/bimpson.jpg';
                 const consoleEl = document.getElementById('bio-console');
                 const typedTextEl = document.getElementById('typed-text');
                 
-                const bioMessage = "I’m a CS student who lives for the logic of a well-solved problem. Whether it's building an app from scratch or debugging a mess of code, I actually enjoy the challenge. I’m always down to pick up whatever tech comes my way—I just want to build cool stuff.";
+                const bioMessage = "I’m a CS student who lives for the logic of a well-solved problem. Whether it's building an app from scratch or debugging a mess of code, I actually enjoy the challenge. I’m always down to pick up whatever tech comes my way - I just want to build cool stuff.";
 
                 gsap.set(words, { y: "100vh", opacity: 0 });
                 gsap.set(photo, { x: "-100vw", opacity: 0 });
