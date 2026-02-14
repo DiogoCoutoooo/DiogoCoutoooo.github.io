@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install, build, and upload your site
-        uses: withastro/action@v2
+        uses: withastro/action@v3
         # Se usares npm, não precisas de mudar nada aqui
         # with:
         #   path: . # Onde está o projeto (raiz)
