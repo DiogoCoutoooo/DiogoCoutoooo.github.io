@@ -173,10 +173,17 @@ const difficultyColor: Record<string, string> = {
 			.machine-count span { color: #9acd32; }
 
 			.htb-grid {
-                column-count: 2;
-                column-gap: 40px;
+                display: flex;
+                gap: 40px;
 				width: 100%;
+                align-items: flex-start;
 			}
+            .htb-column {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 40px;
+            }
 
 			.htb-card {
 				background: rgba(255, 255, 255, 0.01);
@@ -194,8 +201,7 @@ const difficultyColor: Record<string, string> = {
                     "info chart"
                     "btn chart";
                 align-items: start;
-                break-inside: avoid;
-                margin-bottom: 40px;
+                width: 100%; /* Take full width of column */
 			}
 
             .htb-card::before {
@@ -292,10 +298,9 @@ const difficultyColor: Record<string, string> = {
                 flex-shrink: 0;
 				display: flex;
 				align-items: center;
-				justify-content: flex-end;
+				justify-content: center;
 				padding: 0;
                 align-self: stretch; /* Match height of info section */
-                transform: translateX(10px);
 			}
 
 			.htb-view-btn {
@@ -333,10 +338,11 @@ const difficultyColor: Record<string, string> = {
 
 			@media (max-width: 1200px) {
 				.htb-grid { 
-                    column-count: 1; 
-                    display: flex;
                     flex-direction: column;
                     align-items: center;
+                }
+                .htb-column {
+                    width: 100%;
                 }
 				.htb-card { 
                     display: flex;
@@ -486,11 +492,20 @@ const difficultyColor: Record<string, string> = {
 			{machines.length === 0 ? (
 				<div class="empty-state">// No machines found — Check GitHub connection</div>
 			) : (
-				<div class="htb-grid">
+				<div class="htb-grid" id="machinesGrid">
+                    <div class="htb-column" id="col-left"></div>
+                    <div class="htb-column" id="col-right"></div>
+
 					{machines.map((machine) => {
                         const color = difficultyColor[machine.difficulty] || '#9acd32';
                         return (
-                            <div class="htb-card" style={`--diff-color: ${color}`} data-difficulty={machine.difficulty} data-os={machine.os}>
+                            <div
+                                class="htb-card machine-card"
+                                data-difficulty={machine.difficulty}
+                                data-os={machine.os}
+                                id={`card-${machine.id}`}
+                                style={`--diff-color: ${color}; display: none;`}
+                            >
                                 <div class="htb-card-info">
                                     <div class="htb-machine-header">
                                         <img
@@ -537,11 +552,11 @@ const difficultyColor: Record<string, string> = {
 
             function triggerRandomGlitch() {
                 if (!htbTitle || !htbLogoWrapper) return;
-                
+
                 htbTitle.classList.add('glitch-active');
                 htbLogoWrapper.classList.add('glitch-active');
-                
-                const glitchDuration = Math.random() * 200 + 100; 
+
+                const glitchDuration = Math.random() * 200 + 100;
                 setTimeout(() => {
                     htbTitle.classList.remove('glitch-active');
                     htbLogoWrapper.classList.remove('glitch-active');
@@ -569,7 +584,7 @@ const difficultyColor: Record<string, string> = {
             function initRadar(canvas: HTMLCanvasElement) {
                 const ctx = canvas.getContext('2d');
                 if (!ctx) return;
-                
+
                 // Destroy existing chart if it exists
                 if (chartsMap.has(canvas.id)) {
                     chartsMap.get(canvas.id).destroy();
@@ -627,59 +642,94 @@ const difficultyColor: Record<string, string> = {
                 chartsMap.set(canvas.id, newChart);
             }
 
-            const canvases = document.querySelectorAll('canvas[id^="chart-"]');
-            canvases.forEach((canvas) => initRadar(canvas as HTMLCanvasElement));
+            // Initial chart setup (for all cards, even hidden ones, as they will be moved)
+            window.addEventListener('load', () => {
+                const canvases = document.querySelectorAll('canvas[id^="chart-"]');
+                canvases.forEach((canvas) => initRadar(canvas as HTMLCanvasElement));
+                updateFilters(); // Call updateFilters on load to distribute cards
+            });
+
 
             // Filtering Logic
             const filterBtns = document.querySelectorAll('.filter-btn');
-            const cards = document.querySelectorAll('.htb-card');
             const noResults = document.getElementById('no-results');
             const pwnedCountEl = document.getElementById('pwned-count');
 
-            let activeFilters = {
-                difficulty: 'all',
-                os: 'all'
-            };
+            let activeDifficulty = 'all';
+            let activeOS = 'all';
+
+            function updateFilters() {
+                const diff = activeDifficulty;
+                const os = activeOS;
+
+                const cards = Array.from(document.querySelectorAll('.machine-card')) as HTMLElement[];
+                const colLeft = document.getElementById('col-left')!;
+                const colRight = document.getElementById('col-right')!;
+
+                // Clear columns
+                colLeft.innerHTML = '';
+                colRight.innerHTML = '';
+
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const cardDiff = card.getAttribute('data-difficulty');
+                    const cardOS = card.getAttribute('data-os');
+
+                    const diffMatch = diff === 'all' || cardDiff === diff;
+                    const osMatch = os === 'all' || cardOS === os;
+
+                    if (diffMatch && osMatch) {
+                        card.style.display = 'grid'; // Re-show the hidden master cards
+
+                        // Heuristic: On desktop (2 cols), add to shorter column
+                        // Since we can't get real height before mounting, we use a count/balance or re-distribute
+                        if (window.innerWidth > 1200) {
+                            if (colLeft.children.length <= colRight.children.length) {
+                                colLeft.appendChild(card);
+                            } else {
+                                colRight.appendChild(card);
+                            }
+                        } else {
+                            colLeft.appendChild(card);
+                        }
+
+                        visibleCount++;
+
+                        // Re-init chart for this card
+                        const canvas = card.querySelector('canvas');
+                        if (canvas) initRadar(canvas as HTMLCanvasElement);
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Update machine count
+                if (pwnedCountEl) pwnedCountEl.innerText = visibleCount.toString();
+
+                // Handle no results
+                if (visibleCount === 0) noResults?.classList.remove('hidden');
+                else noResults?.classList.add('hidden');
+            }
 
             filterBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const filterType = (btn as HTMLElement).dataset.filter as keyof typeof activeFilters;
+                    const filterType = (btn as HTMLElement).dataset.filter as 'difficulty' | 'os';
                     const filterValue = (btn as HTMLElement).dataset.value!;
 
                     // Update active filters
-                    activeFilters[filterType] = filterValue;
+                    if (filterType === 'difficulty') {
+                        activeDifficulty = filterValue;
+                    } else if (filterType === 'os') {
+                        activeOS = filterValue;
+                    }
 
                     // Update UI buttons
                     document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]`).forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
 
                     // Apply filters
-                    let visibleCount = 0;
-                    cards.forEach(card => {
-                        const hCard = card as HTMLElement;
-                        const cardDiff = hCard.dataset.difficulty;
-                        const cardOS = hCard.dataset.os;
-
-                        const diffMatch = activeFilters.difficulty === 'all' || activeFilters.difficulty === cardDiff;
-                        const osMatch = activeFilters.os === 'all' || activeFilters.os === cardOS;
-
-                        if (diffMatch && osMatch) {
-                            hCard.classList.remove('hidden');
-                            visibleCount++;
-                            // Re-init chart for visible cards to ensure proper layout
-                            const canvas = hCard.querySelector('canvas');
-                            if (canvas) initRadar(canvas);
-                        } else {
-                            hCard.classList.add('hidden');
-                        }
-                    });
-
-                    // Update machine count
-                    if (pwnedCountEl) pwnedCountEl.innerText = visibleCount.toString();
-
-                    // Handle no results
-                    if (visibleCount === 0) noResults?.classList.remove('hidden');
-                    else noResults?.classList.add('hidden');
+                    updateFilters();
                 });
             });
         </script>
