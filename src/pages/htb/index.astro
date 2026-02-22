@@ -1,0 +1,488 @@
+---
+// src/pages/htb/index.astro
+// Fetches ALL machines from GitHub and renders the archive grid dynamically.
+import htbLogo from '../../assets/images/htb_logo.png';
+
+function parseFrontmatter(text: string): Record<string, string> {
+    const match = text.match(/^---\n([\s\S]*?)\n---/);
+    if (!match) return {};
+    const result: Record<string, string> = {};
+    match[1].split('\n').forEach(line => {
+        const idx = line.indexOf(':');
+        if (idx === -1) return;
+        const key = line.slice(0, idx).trim();
+        const value = line.slice(idx + 1).trim();
+        result[key] = value;
+    });
+    return result;
+}
+
+interface HTBMachine {
+    id: string;
+    title: string;
+    os: string;
+    difficulty: string;
+    pwnedDate: string;
+    avatar: string;
+    description: string;
+    matrix: { ENUM: number; REAL: number; CVE: number; CUSTOM: number; CTF: number };
+}
+
+async function getAllMachinesFromGitHub(): Promise<HTBMachine[]> {
+    const folders = [
+        { label: 'Easy',   url: 'Easy'   },
+        { label: 'Medium', url: 'Medium' },
+        { label: 'Hard',   url: 'Hard'   },
+        { label: 'Insane', url: 'Insane' },
+    ];
+
+    const allMachines: HTBMachine[] = [];
+
+    await Promise.all(folders.map(async (folder) => {
+        try {
+            const res = await fetch(
+                `https://api.github.com/repos/DiogoCoutoooo/Cybersec-Obsidian/contents/Tought%20Process/${folder.url}`
+            );
+            if (!res.ok) return;
+            const files = await res.json();
+            const mdFiles = files.filter((f: { name: string }) => f.name.endsWith('.md') && f.name !== 'README.md');
+
+            await Promise.all(mdFiles.map(async (file: { name: string; download_url: string }) => {
+                const contentRes = await fetch(file.download_url);
+                const text = await contentRes.text();
+                const fm = parseFrontmatter(text);
+
+                const title = fm.name || file.name.replace('.md', '');
+                const matrix = {
+                    ENUM:   parseInt(fm.matrix_enum   || '50') * 10,
+                    REAL:   parseInt(fm.matrix_real   || '50') * 10,
+                    CVE:    parseInt(fm.matrix_cve    || '50') * 10,
+                    CUSTOM: parseInt(fm.matrix_custom || '50') * 10,
+                    CTF:    parseInt(fm.matrix_ctf    || '50') * 10,
+                };
+
+                allMachines.push({
+                    id: title.toLowerCase(),
+                    title,
+                    os: fm.os || 'Linux',
+                    difficulty: fm.difficulty || folder.label,
+                    pwnedDate: fm.pwn_date || '',
+                    avatar: `https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_${title}.png`,
+                    description: fm.summary || `Full write-up and thought process for the ${title} machine.`,
+                    matrix,
+                });
+            }));
+        } catch {
+            // Pasta pode não existir ainda — ignora silenciosamente
+        }
+    }));
+
+    // Ordenar por data de pwn (mais recente primeiro)
+    allMachines.sort((a, b) => {
+        return new Date(b.pwnedDate || '2000-01-01').getTime() - new Date(a.pwnedDate || '2000-01-01').getTime();
+    });
+
+    return allMachines;
+}
+
+const machines = await getAllMachinesFromGitHub();
+
+const difficultyColor: Record<string, string> = {
+    Easy:   '#9acd32',
+    Medium: '#f39c12',
+    Hard:   '#e74c3c',
+    Insane: '#9b59b6',
+};
+---
+
+<html lang="pt">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+        <meta name="description" content="All Hack The Box machines pwned by Diogo Couto, with writeups, difficulty and thought process." />
+		<title>HTB Archive | Diogo Couto</title>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@800&display=swap');
+
+			*, *::before, *::after { box-sizing: border-box; }
+
+			body {
+				margin: 0;
+				background-color: #0d0d0d;
+				color: #fff;
+				font-family: 'Syne', sans-serif;
+				overflow-x: hidden;
+                cursor: none;
+			}
+
+            /* Custom cursor */
+            .cursor-dot {
+                width: 8px; height: 8px;
+                background: #fff;
+                border-radius: 50%;
+                position: fixed;
+                top: 0; left: 0;
+                pointer-events: none;
+                z-index: 99999;
+                transform: translate(-50%, -50%);
+                transition: transform 0.1s ease;
+            }
+
+			.noise-overlay {
+				position: fixed;
+				top: -50%; left: -50%; width: 200%; height: 200%;
+				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+				opacity: 0.06;
+				pointer-events: none;
+				z-index: 9999;
+			}
+
+			.container {
+				max-width: 1400px;
+				margin: 0 auto;
+				padding: 100px 4vw 120px;
+			}
+
+			.back-home {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				margin-bottom: 60px;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: #9acd32;
+				text-decoration: none;
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+				transition: all 0.3s;
+                cursor: none;
+			}
+			.back-home:hover { opacity: 0.7; transform: translateX(-4px); }
+
+			.page-header { margin-bottom: 80px; }
+
+			h1 {
+				font-size: clamp(3rem, 9vw, 10rem);
+				margin: 0 0 20px;
+				line-height: 0.9;
+			}
+
+			.page-header-inner {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 20px;
+			}
+
+			.htb-logo {
+				width: clamp(200px, 28vw, 400px);
+				height: auto;
+				flex-shrink: 0;
+				mix-blend-mode: screen;
+				filter:
+					drop-shadow(0 0 12px rgba(154, 205, 50, 0.8))
+					drop-shadow(0 0 30px rgba(154, 205, 50, 0.4))
+					drop-shadow(0 0 60px rgba(154, 205, 50, 0.2));
+				animation: htbGlow 3s ease-in-out infinite alternate;
+			}
+
+			@keyframes htbGlow {
+				from {
+					filter:
+						drop-shadow(0 0 8px rgba(154, 205, 50, 0.7))
+						drop-shadow(0 0 20px rgba(154, 205, 50, 0.3));
+				}
+				to {
+					filter:
+						drop-shadow(0 0 16px rgba(154, 205, 50, 1))
+						drop-shadow(0 0 40px rgba(154, 205, 50, 0.6))
+						drop-shadow(0 0 80px rgba(154, 205, 50, 0.3));
+				}
+			}
+
+			.machine-count {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: rgba(255,255,255,0.4);
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+				margin-top: 16px;
+			}
+			.machine-count span { color: #9acd32; }
+
+			.htb-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+				gap: 30px;
+				width: 100%;
+			}
+
+			.htb-card {
+				background: rgba(255, 255, 255, 0.01);
+				border: 1px solid rgba(255, 255, 255, 0.06);
+				border-radius: 4px;
+				padding: 30px;
+				display: grid;
+				grid-template-columns: 1.3fr 1fr;
+				gap: 20px;
+				transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                position: relative;
+                overflow: hidden;
+                min-height: 320px;
+			}
+
+            .htb-card::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0;
+                width: 3px; height: 100%;
+                background: var(--diff-color, #9acd32);
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+
+			.htb-card:hover {
+				background: rgba(255, 255, 255, 0.03);
+				border-color: rgba(255, 255, 255, 0.15);
+				transform: translateY(-4px);
+			}
+            .htb-card:hover::before { opacity: 1; }
+
+			.htb-card-info {
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+			}
+
+			.htb-machine-header {
+				display: flex;
+				align-items: center;
+				gap: 14px;
+			}
+
+			.htb-machine-avatar {
+				width: 48px; height: 48px;
+				border-radius: 50%;
+				border: 1px solid rgba(154, 205, 50, 0.5);
+				padding: 2px;
+				object-fit: cover;
+                flex-shrink: 0;
+			}
+
+			.htb-machine-name {
+				font-size: 1.6rem;
+				font-weight: 800;
+				margin: 0;
+                line-height: 1;
+			}
+
+			.htb-machine-meta {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.68rem;
+				opacity: 0.55;
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+			}
+
+			.htb-machine-meta span b { color: #9acd32; }
+
+			.diff-badge {
+				display: inline-block;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.6rem;
+				padding: 2px 8px;
+				border-radius: 2px;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+                border: 1px solid;
+                width: fit-content;
+			}
+
+			.htb-description {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.72rem;
+				line-height: 1.65;
+				opacity: 0.7;
+				margin: 0;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+			}
+
+			.htb-chart-wrapper {
+				position: relative;
+				width: 100%;
+				min-height: 240px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 10px 0;
+			}
+
+			.htb-view-btn {
+				margin-top: auto;
+				padding: 9px 18px;
+				background: transparent;
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				color: #fff;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.6rem;
+				text-transform: uppercase;
+				letter-spacing: 0.2em;
+				transition: all 0.3s;
+				text-align: center;
+				text-decoration: none;
+				width: fit-content;
+                cursor: none;
+			}
+			.htb-view-btn:hover {
+				background: #9acd32;
+				color: #000;
+				border-color: #9acd32;
+			}
+
+			.empty-state {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.85rem;
+				color: rgba(255,255,255,0.3);
+				text-align: center;
+				padding: 80px 0;
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+			}
+
+			@media (max-width: 900px) {
+				.htb-grid { grid-template-columns: 1fr; }
+				.htb-card { grid-template-columns: 1fr; }
+				.htb-chart-wrapper { aspect-ratio: 1; max-height: 200px; }
+			}
+		</style>
+	</head>
+	<body>
+        <div class="cursor-dot" id="cursor-dot"></div>
+		<div class="noise-overlay"></div>
+		<main class="container">
+			<a href="/" class="back-home">← Terminal_Root</a>
+
+			<div class="page-header">
+				<div class="page-header-inner">
+					<h1>HACK THE<br/>BOX</h1>
+					<img
+						src={htbLogo.src}
+						alt="Hack The Box Logo"
+						class="htb-logo"
+					/>
+				</div>
+				<p class="machine-count">
+					<span>{machines.length}</span> machine{machines.length !== 1 ? 's' : ''} pwned
+				</p>
+			</div>
+
+			{machines.length === 0 ? (
+				<div class="empty-state">// No machines found — Check GitHub connection</div>
+			) : (
+				<div class="htb-grid">
+					{machines.map((machine) => {
+                        const color = difficultyColor[machine.difficulty] || '#9acd32';
+                        return (
+                            <div class="htb-card" style={`--diff-color: ${color}`}>
+                                <div class="htb-card-info">
+                                    <div class="htb-machine-header">
+                                        <img
+                                            src={machine.avatar}
+                                            alt={machine.title}
+                                            class="htb-machine-avatar"
+                                            onerror="this.src='https://www.hackthebox.com/images/logo.png'"
+                                        />
+                                        <div>
+                                            <h3 class="htb-machine-name">{machine.title}</h3>
+                                            <span class="diff-badge" style={`color: ${color}; border-color: ${color}; background: ${color}18`}>
+                                                {machine.difficulty}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="htb-machine-meta">
+                                        <span><b>OS:</b> {machine.os}</span>
+                                        <span><b>Pwned:</b> {machine.pwnedDate}</span>
+                                    </div>
+                                    <p class="htb-description">{machine.description}</p>
+                                    <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup →</a>
+                                </div>
+                                <div class="htb-chart-wrapper">
+                                    <canvas
+                                        id={`chart-${machine.id}`}
+                                        data-matrix={JSON.stringify(machine.matrix)}
+                                    ></canvas>
+                                </div>
+                            </div>
+                        );
+                    })}
+				</div>
+			)}
+		</main>
+
+        <script>
+            // Cursor personalizado
+            const dot = document.getElementById('cursor-dot');
+            document.addEventListener('mousemove', (e) => {
+                if (dot) {
+                    dot.style.left = e.clientX + 'px';
+                    dot.style.top = e.clientY + 'px';
+                }
+            });
+
+            // Radar Charts
+            import Chart from 'chart.js/auto';
+            const canvases = document.querySelectorAll('canvas[id^="chart-"]');
+            canvases.forEach((canvas) => {
+                const ctx = (canvas as HTMLCanvasElement).getContext('2d');
+                if (!ctx) return;
+                const matrixData = JSON.parse((canvas as HTMLElement).dataset.matrix || '{}');
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['ENUM', 'REAL', 'CVE', 'CUSTOM', 'CTF'],
+                        datasets: [{
+                            label: 'Machine Matrix',
+                            data: [matrixData.ENUM, matrixData.REAL, matrixData.CVE, matrixData.CUSTOM, matrixData.CTF],
+                            backgroundColor: 'rgba(154, 205, 50, 0.12)',
+                            borderColor: '#9acd32',
+                            pointBackgroundColor: '#9acd32',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 1,
+                            pointRadius: 3,
+                            borderWidth: 2,
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(255,255,255,0.08)' },
+                                grid: { color: 'rgba(255,255,255,0.08)' },
+                                pointLabels: {
+                                    color: 'rgba(255,255,255,0.6)',
+                                    font: { family: 'JetBrains Mono', size: 9 }
+                                },
+                                ticks: { display: false, stepSize: 20 },
+                                suggestedMin: 0,
+                                suggestedMax: 100
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            });
+        </script>
+	</body>
+</html>

@@ -2,6 +2,84 @@
 // src/pages/index.astro
 import { Image } from 'astro:assets';
 import profileImage from '../assets/images/bimpson.jpg';
+
+// Helper: parse YAML frontmatter from a markdown string
+function parseFrontmatter(text: string): Record<string, string> {
+    const match = text.match(/^---\n([\s\S]*?)\n---/);
+    if (!match) return {};
+    const result: Record<string, string> = {};
+    match[1].split('\n').forEach(line => {
+        const idx = line.indexOf(':');
+        if (idx === -1) return;
+        const key = line.slice(0, idx).trim();
+        const value = line.slice(idx + 1).trim();
+        result[key] = value;
+    });
+    return result;
+}
+
+// Função para transformar notas do Obsidian em dados para o Portfólio
+async function getLatestMachineFromGitHub() {
+    try {
+        const repoUrl = "https://api.github.com/repos/DiogoCoutoooo/Cybersec-Obsidian/contents/Tought%20Process/Easy";
+        const response = await fetch(repoUrl);
+        const files = await response.json();
+        
+        const mdFiles = files.filter((f: { name: string; }) => f.name.endsWith('.md') && f.name !== 'README.md');
+        
+        // Fetch todos os ficheiros e parsear o frontmatter para obter a data de pwn
+        const machines = await Promise.all(
+            mdFiles.map(async (file: { name: string; download_url: string }) => {
+                const contentRes = await fetch(file.download_url);
+                const text = await contentRes.text();
+                const fm = parseFrontmatter(text);
+                return { file, text, fm };
+            })
+        );
+
+        // Ordenar pelo pwn_date e pegar na mais recente
+        machines.sort((a, b) => {
+            const dateA = new Date(a.fm.pwn_date || '2000-01-01').getTime();
+            const dateB = new Date(b.fm.pwn_date || '2000-01-01').getTime();
+            return dateB - dateA;
+        });
+
+        const { fm, file } = machines[0];
+        const title = fm.name || file.name.replace('.md', '');
+
+        // Matrix a partir dos campos individuais
+        const matrix = {
+            ENUM:   parseInt(fm.matrix_enum   || '85') * 10,
+            REAL:   parseInt(fm.matrix_real   || '75') * 10,
+            CVE:    parseInt(fm.matrix_cve    || '20') * 10,
+            CUSTOM: parseInt(fm.matrix_custom || '70') * 10,
+            CTF:    parseInt(fm.matrix_ctf    || '65') * 10,
+        };
+
+        // Tentar encontrar o logo na pasta !Media
+        const avatarUrl = `https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_${title}.png`;
+
+        return [{
+            id: title.toLowerCase(),
+            data: {
+                title: title,
+                os: fm.os || 'Linux',
+                difficulty: fm.difficulty || 'Easy',
+                pwnedDate: fm.pwn_date || '2026-02-18',
+                avatar: avatarUrl,
+                matrix: matrix,
+                description: fm.summary || 'Descobre os passos e a lógica que utilizei para dominar esta máquina.',
+            }
+        }];
+    } catch (e) {
+        console.error("Erro ao ir buscar dados ao GitHub:", e);
+        return [];
+    }
+}
+
+const displayMachines = await getLatestMachineFromGitHub();
+
+const getMachineImage = (title: string, avatar: string) => avatar;
 ---
 <html lang="pt">
     <head>
@@ -11,6 +89,10 @@ import profileImage from '../assets/images/bimpson.jpg';
         <style>
             @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&family=Syne:wght@800&display=swap');
 
+            * {
+                box-sizing: border-box;
+            }
+
             body {
                 margin: 0;
                 background-color: #0d0d0d;
@@ -19,6 +101,7 @@ import profileImage from '../assets/images/bimpson.jpg';
                 overflow-x: hidden;
                 cursor: none;
                 position: relative;
+                width: 100%;
             }
 
             /* Esconder barra de scroll para Chrome, Safari e Opera */
@@ -166,8 +249,9 @@ import profileImage from '../assets/images/bimpson.jpg';
 
             section { width: 100%; position: relative; display: flex; flex-direction: column; align-items: center; }
             .cap-1 { min-height: 110vh; background-color: transparent; } /* Reduzido para o texto aparecer mais cedo */
-            .cap-2 { height: 100vh; background-color: #0f0f0f; justify-content: center; }
-            .cap-3 { height: 100vh; background-color: #141414; justify-content: center; }
+            .cap-2 { height: 100vh; background-color: transparent; justify-content: center; }
+            .cap-3 { height: 100vh; background-color: transparent; justify-content: center; }
+            .cap-4 { height: 100vh; background-color: transparent; justify-content: center; }
 
             .sub-info { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; margin-top: 20px; color: #444; }
             .content-block { width: 100%; max-width: 1200px; padding: 10vh 5vw 30vh 5vw; box-sizing: border-box; }
@@ -355,6 +439,217 @@ import profileImage from '../assets/images/bimpson.jpg';
 			#three-canvas-container:active {
 			    cursor: grabbing;
 			}
+			/* --- HTB SECTION --- */
+			.cap-htb { 
+				min-height: 100vh; 
+				background-color: transparent; 
+				padding: 0px 4vw 150px 4vw; /* 120px para alinhar com as barras, 250px de respiro em baixo */
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: flex-start;
+			}
+
+			.htb-intro {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 1rem;
+				opacity: 0.6;
+				margin-bottom: 50px;
+				max-width: 600px;
+				text-align: center;
+				line-height: 1.6;
+			}
+
+			.htb-title {
+				font-size: 7.5vw !important; /* Ligeiramente reduzido para não transbordar */
+				margin-bottom: 2vh;
+				text-align: center;
+				color: #fff;
+				text-transform: uppercase;
+				letter-spacing: -0.02em;
+                width: 100%;
+                max-width: 100vw;
+                overflow: hidden;
+                white-space: nowrap;
+                display: block;
+			}
+
+			.htb-grid {
+				display: flex;
+				justify-content: center;
+				width: 100%;
+				max-width: 1400px;
+                z-index: 10;
+                position: relative;
+                pointer-events: auto;
+			}
+
+			.htb-card {
+				background: rgba(255, 255, 255, 0.05);
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				border-radius: 4px;
+				padding: 40px;
+				position: relative;
+				overflow: hidden;
+				display: grid;
+				grid-template-columns: 1.2fr 1fr;
+				gap: 40px;
+				transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                max-width: 900px;
+                width: 100%;
+                opacity: 1 !important; /* Garantir visibilidade imediata */
+			}
+
+			.htb-card:hover {
+				background: rgba(255, 255, 255, 0.08);
+				border-color: #9acd32;
+				transform: translateY(-5px);
+			}
+
+            .htb-card-info {
+				display: flex;
+				flex-direction: column;
+				gap: 15px;
+			}
+
+			.htb-machine-header {
+				display: flex;
+				align-items: center;
+				gap: 15px;
+			}
+
+			.htb-machine-avatar {
+				width: 50px;
+				height: 50px;
+				border-radius: 50%;
+				border: 1px solid #9acd32;
+				padding: 2px;
+			}
+
+			.htb-machine-name {
+				font-size: 1.8rem;
+				font-weight: 800;
+				margin: 0;
+			}
+
+			.htb-machine-meta {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.7rem;
+				opacity: 0.6;
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+				display: flex;
+				flex-direction: column;
+				gap: 5px;
+			}
+
+			.htb-machine-meta span b {
+				color: #9acd32;
+			}
+
+			.htb-description {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.8rem;
+				line-height: 1.6;
+				opacity: 0.8;
+				margin-top: 10px;
+			}
+
+			.htb-chart-wrapper {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.htb-view-btn {
+				margin-top: auto;
+				padding: 10px 20px;
+				background: transparent;
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				color: #fff;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.6rem;
+				text-transform: uppercase;
+				letter-spacing: 0.2em;
+				cursor: pointer;
+				transition: all 0.3s;
+				text-align: center;
+				text-decoration: none;
+				width: fit-content;
+                cursor: none;
+                pointer-events: auto;
+                position: relative;
+                z-index: 20;
+			}
+
+			.htb-view-btn:hover {
+				background: #9acd32;
+				color: #000;
+				border-color: #9acd32;
+			}
+
+            .htb-archive-btn {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-decoration: none;
+                padding: 15px 40px;
+                background: rgba(154, 205, 50, 0.05);
+                border: 1px solid rgba(154, 205, 50, 0.3);
+                position: relative;
+                overflow: hidden;
+                transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                z-index: 5;
+                pointer-events: auto;
+                cursor: none;
+            }
+
+            .htb-archive-btn .btn-text {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.8rem;
+                color: #9acd32;
+                letter-spacing: 0.4em;
+                z-index: 2;
+                position: relative;
+            }
+
+            .htb-archive-btn::before {
+                content: '';
+                position: absolute;
+                top: 0; left: -100%;
+                width: 100%; height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(154, 205, 50, 0.2), transparent);
+                transition: 0.5s;
+                z-index: 1;
+            }
+
+            .htb-archive-btn:hover {
+                background: rgba(154, 205, 50, 0.15);
+                border-color: #9acd32;
+                transform: translateY(-2px);
+                box-shadow: 0 0 20px rgba(154, 205, 50, 0.2);
+            }
+
+            .htb-archive-btn:hover::before {
+                left: 100%;
+            }
+
+            .htb-archive-btn:active {
+                transform: translateY(0);
+            }
+
+			@media (max-width: 900px) {
+				.htb-card {
+					grid-template-columns: 1fr;
+				}
+				.htb-chart-wrapper {
+					aspect-ratio: 1;
+				}
+			}
+
         </style>
     </head>
     <body>
@@ -381,7 +676,7 @@ import profileImage from '../assets/images/bimpson.jpg';
                     <div class="bio-content-pin">
                         <div class="bio-top-grid">
                             <div class="photo-placeholder" id="bio-photo">
-                                <Image src={profileImage} alt="Diogo Couto" />
+                                <Image src={profileImage} alt="Diogo Couto" width={500} height={625} />
                             </div>
                             <div class="bio-console" id="bio-console">
                                 <div class="console-header">
@@ -412,13 +707,56 @@ import profileImage from '../assets/images/bimpson.jpg';
                 <h2 style="font-size: 10vw;">PROJECTS</h2>
 
                 <div class="sticky-bar" data-target="#cap2">
+                    <button class="nav-button"><div class="arrow-up"></div><span>Projects</span></button>
+                </div>
+            </section>
+
+            <section id="cap3" class="cap-htb">
+                <h2 class="htb-title">HACK THE BOX</h2>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: -20px; margin-bottom: 40px;">
+                    <p class="htb-intro" style="margin: 0;">Este é o meu thought process de como dou exploit às máquinas do Hack The Box.</p>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #9acd32; letter-spacing: 0.3em; opacity: 0.8;">[ LATEST_PWN_LOG ]</span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 40px; align-items: center; width: 100%; max-width: 1000px; margin: 0 auto;">
+                    {displayMachines.map((machine) => (
+                        <div class="htb-grid" style="width: 100%; display: flex; justify-content: center;">
+                            <div class="htb-card">
+                                <div class="htb-card-info">
+                                    <div class="htb-machine-header">
+                                        <Image src={getMachineImage(machine.data.title, machine.data.avatar) as any} alt={machine.data.title} class="htb-machine-avatar" width={50} height={50} />
+                                        <h3 class="htb-machine-name">{machine.data.title}</h3>
+                                    </div>
+                                    <div class="htb-machine-meta">
+                                        <span><b>OS:</b> {machine.data.os}</span>
+                                        <span><b>Difficulty:</b> {machine.data.difficulty}</span>
+                                        <span><b>Pwned:</b> {machine.data.pwnedDate}</span>
+                                    </div>
+                                    <p class="htb-description">{machine.data.description || 'Descobre os passos e a lógica que utilizei para dominar esta máquina.'}</p>
+                                    <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup</a>
+                                </div>
+                                <div class="htb-chart-wrapper">
+                                    <canvas id={`chart-${machine.data.title.toLowerCase()}`} 
+                                            data-matrix={JSON.stringify(machine.data.matrix)}></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    
+                    <a href="/htb" class="htb-archive-btn" style="margin-top: 20px; cursor: none;">
+                        <span class="btn-glitch"></span>
+                        <span class="btn-text">EXE::SEE_FULL_ARCHIVE.SH</span>
+                    </a>
+                </div>
+
+                <div class="sticky-bar" data-target="#cap3">
                     <button class="nav-button"><div class="arrow-up"></div><span>Security_Audit</span></button>
                 </div>
             </section>
 
-            <section id="cap3" class="cap-3">
+            <section id="cap4" class="cap-4">
                 <h2 style="font-size: 10vw;">CONTACT</h2>
-                <div class="sticky-bar" data-target="#cap3">
+                <div class="sticky-bar" data-target="#cap4">
                     <button class="nav-button"><div class="arrow-up"></div><span>Encrypted_Mail</span></button>
                 </div>
             </section>
@@ -428,6 +766,7 @@ import profileImage from '../assets/images/bimpson.jpg';
             import gsap from 'gsap';
             import { ScrollTrigger } from 'gsap/ScrollTrigger';
             import Lenis from '@studio-freight/lenis';
+            import Chart from 'chart.js/auto';
 
             gsap.registerPlugin(ScrollTrigger);
 
@@ -460,6 +799,69 @@ import profileImage from '../assets/images/bimpson.jpg';
             }
 
             const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+
+            const initHTBCharts = () => {
+                const canvases = document.querySelectorAll('canvas[id^="chart-"]');
+                canvases.forEach((canvas) => {
+                    const ctx = (canvas as HTMLCanvasElement).getContext('2d');
+                    if (!ctx) return;
+
+                    const matrixData = JSON.parse((canvas as HTMLElement).dataset.matrix || '{}');
+                    
+                    new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: ['ENUM', 'REAL', 'CVE', 'CUSTOM', 'CTF'],
+                            datasets: [{
+                                label: 'Machine Matrix',
+                                data: [
+                                    matrixData.ENUM,
+                                    matrixData.REAL,
+                                    matrixData.CVE,
+                                    matrixData.CUSTOM,
+                                    matrixData.CTF
+                                ],
+                                    backgroundColor: 'rgba(154, 205, 50, 0.15)',
+                                    borderColor: '#9acd32',
+                                    pointBackgroundColor: '#9acd32',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 1,
+                                    pointRadius: 2,
+                                    borderWidth: 2,
+                                    fill: true,
+                                }]
+                            },
+                            options: {
+                                animation: false,
+                                scales: {
+                                    r: {
+                                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                        pointLabels: {
+                                            color: 'rgba(255, 255, 255, 0.7)',
+                                        font: {
+                                            family: 'JetBrains Mono',
+                                            size: 8
+                                        }
+                                    },
+                                    ticks: {
+                                        display: false,
+                                        stepSize: 20
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 100
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: false }
+                            },
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                });
+            };
 
             async function decryptElement(el: HTMLElement) {
                 if (!el) return;
@@ -517,7 +919,6 @@ import profileImage from '../assets/images/bimpson.jpg';
 
             window.addEventListener('load', async () => {
                 // --- INITIAL STATE SETUP --- 
-                // Impede o browser de restaurar a posição do scroll ao dar refresh
                 if ('scrollRestoration' in history) {
                     history.scrollRestoration = 'manual';
                 }
@@ -528,59 +929,83 @@ import profileImage from '../assets/images/bimpson.jpg';
                 const consoleEl = document.getElementById('bio-console');
                 const typedTextEl = document.getElementById('typed-text');
                 
-                const bioMessage = "I’m a CS student who lives for the logic of a well-solved problem. Whether it's building an app from scratch or debugging a mess of code, I actually enjoy the challenge. I’m always down to pick up whatever tech comes my way - I just want to build cool stuff.";
+                const bioMessage = "I'm a CS student who lives for the logic of a well-solved problem. Whether it's building an app from scratch or debugging a mess of code, I actually enjoy the challenge. I'm always down to pick up whatever tech comes my way - I just want to build cool stuff.";
 
                 gsap.set(words, { y: "100vh", opacity: 0 });
                 gsap.set(photo, { x: "-100vw", opacity: 0 });
                 gsap.set(consoleEl, { x: "100vw", opacity: 0 });
 
-                // Bloquear scroll inicial
-                lenis.stop();
-                document.body.classList.add('scroll-locked');
-                
-                const preventScroll = (e: Event) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                };
-
-                const blockKeys = (e: KeyboardEvent) => {
-                    const keys = ['ArrowUp', 'ArrowDown', 'Space', ' ', 'PageUp', 'PageDown', 'Home', 'End'];
-                    if (keys.includes(e.key)) {
-                        e.preventDefault();
-                        return false;
-                    }
-                };
-
-                window.addEventListener('wheel', preventScroll, { passive: false });
-                window.addEventListener('touchmove', preventScroll, { passive: false });
-                window.addEventListener('keydown', blockKeys, { passive: false });
-
                 const bootBar = document.getElementById('boot-bar');
                 const scrollStatusLine = document.getElementById('scroll-status');
 
-                // Animação da barra de progresso (fingida até 95%)
-                const barTween = gsap.to(bootBar, { width: "100%", duration: 5.5, ease: "power1.inOut" });
+                // --- SKIP ANIMATION SE JÁ VIU (ex: voltou de /htb) ---
+                const alreadyBooted = sessionStorage.getItem('boot_done');
 
-                // Agora sim, arrancamos com as animações de texto da Hero
-                await Promise.all([
-                    decryptElement(coordsEl),
-                    decryptElement(heroTitle),
-                    decryptElement(heroSubtitle)
-                ]);
-                await updateStatus();
-                
-                // Desbloquear scroll
-                barTween.kill();
-                if (bootBar) bootBar.style.width = "100%";
-                
-                window.removeEventListener('wheel', preventScroll);
-                window.removeEventListener('touchmove', preventScroll);
-                window.removeEventListener('keydown', blockKeys);
-                document.body.classList.remove('scroll-locked');
-                
-                lenis.start();
-                triggerRandomGlitch();
+                if (alreadyBooted) {
+                    // Salta diretamente para o estado final
+                    if (heroTitle) heroTitle.dataset.value && (heroTitle.innerHTML = `DIOGO<br/>COUTO`);
+                    if (heroSubtitle) heroSubtitle.innerText = heroSubtitle.dataset.value || '';
+                    if (coordsEl) coordsEl.innerText = coordsEl.dataset.value || '';
+                    if (statusEl) {
+                        statusEl.innerText = 'STATUS: SECURED_';
+                        statusEl.classList.replace('status-decrypting', 'status-secured');
+                    }
+                    if (bootBar) { bootBar.style.width = '100%'; bootBar.classList.add('loaded'); }
+                    if (scrollStatusLine) {
+                        scrollStatusLine.innerText = 'ACCESS_GRANTED';
+                        scrollStatusLine.classList.replace('status-decrypting', 'status-secured');
+                    }
+                    lenis.start();
+                    triggerRandomGlitch();
+                } else {
+                    // Primeira visita — faz a animação completa
+                    lenis.stop();
+                    document.body.classList.add('scroll-locked');
+                    
+                    const preventScroll = (e: Event) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    };
+
+                    const blockKeys = (e: KeyboardEvent) => {
+                        const keys = ['ArrowUp', 'ArrowDown', 'Space', ' ', 'PageUp', 'PageDown', 'Home', 'End'];
+                        if (keys.includes(e.key)) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    };
+
+                    window.addEventListener('wheel', preventScroll, { passive: false });
+                    window.addEventListener('touchmove', preventScroll, { passive: false });
+                    window.addEventListener('keydown', blockKeys, { passive: false });
+
+                    // Animação da barra de progresso (fingida até 95%)
+                    const barTween = gsap.to(bootBar, { width: "100%", duration: 5.5, ease: "power1.inOut" });
+
+                    // Agora sim, arrancamos com as animações de texto da Hero
+                    await Promise.all([
+                        decryptElement(coordsEl),
+                        decryptElement(heroTitle),
+                        decryptElement(heroSubtitle)
+                    ]);
+                    await updateStatus();
+                    
+                    // Desbloquear scroll
+                    barTween.kill();
+                    if (bootBar) bootBar.style.width = "100%";
+                    
+                    window.removeEventListener('wheel', preventScroll);
+                    window.removeEventListener('touchmove', preventScroll);
+                    window.removeEventListener('keydown', blockKeys);
+                    document.body.classList.remove('scroll-locked');
+                    
+                    lenis.start();
+                    triggerRandomGlitch();
+
+                    // Marcar como já visto para esta sessão
+                    sessionStorage.setItem('boot_done', '1');
+                }
 
                 // --- ANIMATION: BIO FREEZE REVEAL ---
                 const tl = gsap.timeline({
@@ -628,6 +1053,9 @@ import profileImage from '../assets/images/bimpson.jpg';
                     ease: "power2.in",
                     duration: 1
                 }, "+=0.5");
+
+                // Animação do card removida temporariamente para garantir visibilidade
+                initHTBCharts();
             });
 
             window.addEventListener('mousemove', (e) => {

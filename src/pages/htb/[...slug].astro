@@ -1,0 +1,24 @@
+---
+import { getCollection, render } from 'astro:content';
+import HTBLayout from '../../components/HTBLayout.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('htb');
+  return entries.map(entry => ({
+    params: { slug: entry.id }, props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<HTBLayout 
+  title={entry.data.title}
+  os={entry.data.os}
+  difficulty={entry.data.difficulty}
+  pwnedDate={entry.data.pwnedDate}
+  avatar={entry.data.avatar}
+>
+  <Content />
+</HTBLayout>
