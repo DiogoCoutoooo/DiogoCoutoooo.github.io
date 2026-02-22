@@ -7,30 +7,7 @@
     "pwnedDate": "21 Feb 2026",
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Cap.png",
     "description": "Exposed IDOR vulnerability in the web dashboard allowed for the download of other users' network captures. Analysis of a specific PCAP file revealed cleartext FTP credentials. After gaining a shell, local enumeration showed that Python 3.8 was configured with dangerous capabilities (cap_setuid,cap_net_bind_service+eip). This misconfiguration allowed for an immediate privilege escalation to root by manipulating the process UID via a simple python script.",
-    "matrix": {
-      "ENUM": 60,
-      "REAL": 40,
-      "CVE": 40,
-      "CUSTOM": 80,
-      "CTF": 90
-    },
-    "folder": "Easy"
-  },
-  {
-    "id": "expressway",
-    "title": "Expressway",
-    "os": "Linux",
-    "difficulty": "Easy",
-    "pwnedDate": "18 Feb 2026",
-    "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Expressway.png",
-    "description": "Exposed IKE port allowed for aggressive mode sniffing, leading to the crack of a Pre-Shared Key (PSK). This provided access to a VPN tunnel where internal services were reachable. After pivoting, a cleartext password was found in a configuration file, granting SSH access. Final privilege escalation was achieved by exploiting a misconfigured SUID binary to execute commands as root.",
-    "matrix": {
-      "ENUM": 80,
-      "REAL": 70,
-      "CVE": 50,
-      "CUSTOM": 40,
-      "CTF": 60
-    },
+    "matrix": { "ENUM": 60, "REAL": 40, "CVE": 40, "CUSTOM": 80, "CTF": 90 },
     "folder": "Easy"
   },
   {
@@ -41,13 +18,18 @@
     "pwnedDate": "22 Feb 2023",
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Keeper.png",
     "description": "test",
-    "matrix": {
-      "ENUM": 50,
-      "REAL": 40,
-      "CVE": 30,
-      "CUSTOM": 80,
-      "CTF": 90
-    },
+    "matrix": { "ENUM": 50, "REAL": 40, "CVE": 60, "CUSTOM": 70, "CTF": 0 },
+    "folder": "Easy"
+  },
+  {
+    "id": "expressway",
+    "title": "Expressway",
+    "os": "Linux",
+    "difficulty": "Easy",
+    "pwnedDate": "18 Feb 2026",
+    "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Expressway.png",
+    "description": "Exposed IKE port allowed for aggressive mode sniffing, leading to the crack of a Pre-Shared Key (PSK). This provided access to a VPN tunnel where internal services were reachable. After pivoting, a cleartext password was found in a configuration file, granting SSH access. Final privilege escalation was achieved by exploiting a misconfigured SUID binary to execute commands as root.",
+    "matrix": { "ENUM": 80, "REAL": 70, "CVE": 50, "CUSTOM": 40, "CTF": 60 },
     "folder": "Easy"
   }
 ]

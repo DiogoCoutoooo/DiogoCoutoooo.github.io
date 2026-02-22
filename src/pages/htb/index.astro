@@ -179,7 +179,8 @@ const difficultyColor: Record<string, string> = {
                 align-items: flex-start;
 			}
             .htb-column {
-                flex: 1;
+                flex: 1 1 0px;
+                min-width: 0;
                 display: flex;
                 flex-direction: column;
                 gap: 40px;
@@ -196,12 +197,12 @@ const difficultyColor: Record<string, string> = {
                 overflow: hidden;
                 display: grid;
                 grid-template-columns: 53% 47%;
+                grid-template-rows: 1fr auto;
                 grid-template-areas: 
                     "info chart"
-                    "info chart"
                     "btn chart";
-                align-items: start;
-                width: 100%; /* Take full width of column */
+                align-items: stretch;
+                width: 100%;
 			}
 
             .htb-card::before {
@@ -305,7 +306,7 @@ const difficultyColor: Record<string, string> = {
 
 			.htb-view-btn {
                 grid-area: btn;
-				margin-top: 20px;
+				margin-top: 30px;
 				padding: 9px 18px;
 				background: transparent;
 				border: 1px solid rgba(255, 255, 255, 0.2);
@@ -319,6 +320,7 @@ const difficultyColor: Record<string, string> = {
 				text-decoration: none;
 				width: fit-content;
                 cursor: none;
+                align-self: end; /* Fixes consistency at the bottom */
 			}
 			.htb-view-btn:hover {
 				background: #9acd32;
@@ -492,53 +494,61 @@ const difficultyColor: Record<string, string> = {
 			{machines.length === 0 ? (
 				<div class="empty-state">// No machines found — Check GitHub connection</div>
 			) : (
-				<div class="htb-grid" id="machinesGrid">
-                    <div class="htb-column" id="col-left"></div>
-                    <div class="htb-column" id="col-right"></div>
-
-					{machines.map((machine) => {
-                        const color = difficultyColor[machine.difficulty] || '#9acd32';
-                        return (
-                            <div
-                                class="htb-card machine-card"
-                                data-difficulty={machine.difficulty}
-                                data-os={machine.os}
-                                id={`card-${machine.id}`}
-                                style={`--diff-color: ${color}; display: none;`}
-                            >
-                                <div class="htb-card-info">
-                                    <div class="htb-machine-header">
-                                        <img
-                                            src={machine.avatar}
-                                            alt={machine.title}
-                                            class="htb-machine-avatar"
-                                            onerror="this.src='https://www.hackthebox.com/images/logo.png'"
-                                        />
-                                        <div>
-                                            <h3 class="htb-machine-name">{machine.title}</h3>
-                                            <span class="diff-badge" style={`color: ${color}; border-color: ${color}; background: ${color}18`}>
-                                                {machine.difficulty}
-                                            </span>
+                <>
+                    <div id="master-machines-list" style="display: none;">
+                        {machines.map((machine) => {
+                            const color = difficultyColor[machine.difficulty] || '#9acd32';
+                            return (
+                                <div
+                                    class="htb-card machine-card"
+                                    data-difficulty={machine.difficulty}
+                                    data-os={machine.os}
+                                    id={`card-${machine.id}`}
+                                    style={`--diff-color: ${color};`}
+                                >
+                                    <div class="htb-card-info">
+                                        <div class="htb-machine-header">
+                                            {machine.avatar && (
+                                                <img
+                                                    src={machine.avatar}
+                                                    alt={machine.title}
+                                                    class="htb-machine-avatar"
+                                                    onerror="this.src='/favicon.svg'"
+                                                />
+                                            )}
+                                            <div class={machine.avatar ? "" : "no-avatar-offset"}>
+                                                <h3 class="htb-machine-name">{machine.title}</h3>
+                                                <span class="diff-badge" style={`color: ${color}; border-color: ${color}; background: ${color}18`}>
+                                                    {machine.difficulty}
+                                                </span>
+                                            </div>
                                         </div>
+                                        <div class="htb-machine-meta">
+                                            <span><b>OS:</b> {machine.os}</span>
+                                            <span><b>Pwned:</b> {machine.pwnedDate}</span>
+                                        </div>
+                                        <p class="htb-description">{machine.description}</p>
                                     </div>
-                                    <div class="htb-machine-meta">
-                                        <span><b>OS:</b> {machine.os}</span>
-                                        <span><b>Pwned:</b> {machine.pwnedDate}</span>
+                                    <div class="htb-chart-wrapper">
+                                        <canvas
+                                            id={`chart-${machine.id}`}
+                                            data-matrix={JSON.stringify(machine.matrix)}
+                                            data-color={color}
+                                        ></canvas>
                                     </div>
-                                    <p class="htb-description">{machine.description}</p>
+                                    <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup →</a>
                                 </div>
-                                <div class="htb-chart-wrapper">
-                                    <canvas
-                                        id={`chart-${machine.id}`}
-                                        data-matrix={JSON.stringify(machine.matrix)}
-                                    ></canvas>
-                                </div>
-                                <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup →</a>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
+
                     <div id="no-results" class="no-results hidden">// No more machines match these filters</div>
-				</div>
+                    
+                    <div class="htb-grid" id="machinesGrid">
+                        <div class="htb-column" id="col-left"></div>
+                        <div class="htb-column" id="col-right"></div>
+                    </div>
+                </>
 			)}
 		</main>
 
@@ -591,6 +601,8 @@ const difficultyColor: Record<string, string> = {
                 }
 
                 const matrixData = JSON.parse(canvas.dataset.matrix || '{}');
+                const diffColor = canvas.dataset.color || '#9acd32';
+                
                 const newChart = new Chart(ctx, {
                     type: 'radar',
                     data: {
@@ -598,9 +610,9 @@ const difficultyColor: Record<string, string> = {
                         datasets: [{
                             label: 'Machine Matrix',
                             data: [matrixData.ENUM, matrixData.REAL, matrixData.CVE, matrixData.CUSTOM, matrixData.CTF],
-                            backgroundColor: 'rgba(154, 205, 50, 0.12)',
-                            borderColor: '#9acd32',
-                            pointBackgroundColor: '#9acd32',
+                            backgroundColor: `${diffColor}20`, // semi-transparent
+                            borderColor: diffColor,
+                            pointBackgroundColor: diffColor,
                             pointBorderColor: '#fff',
                             pointBorderWidth: 1,
                             pointRadius: 3,
@@ -662,13 +674,16 @@ const difficultyColor: Record<string, string> = {
                 const diff = activeDifficulty;
                 const os = activeOS;
 
-                const cards = Array.from(document.querySelectorAll('.machine-card')) as HTMLElement[];
+                const masterList = document.getElementById('master-machines-list')!;
                 const colLeft = document.getElementById('col-left')!;
                 const colRight = document.getElementById('col-right')!;
+                const cards = Array.from(document.querySelectorAll('.machine-card')) as HTMLElement[];
 
-                // Clear columns
-                colLeft.innerHTML = '';
-                colRight.innerHTML = '';
+                // Move all cards back to storage first (clears columns without destroying elements)
+                cards.forEach(card => {
+                    card.style.display = 'none';
+                    masterList.appendChild(card);
+                });
 
                 let visibleCount = 0;
 
@@ -680,10 +695,9 @@ const difficultyColor: Record<string, string> = {
                     const osMatch = os === 'all' || cardOS === os;
 
                     if (diffMatch && osMatch) {
-                        card.style.display = 'grid'; // Re-show the hidden master cards
+                        card.style.display = 'grid';
 
-                        // Heuristic: On desktop (2 cols), add to shorter column
-                        // Since we can't get real height before mounting, we use a count/balance or re-distribute
+                        // Distribute to shorter column
                         if (window.innerWidth > 1200) {
                             if (colLeft.children.length <= colRight.children.length) {
                                 colLeft.appendChild(card);
@@ -696,11 +710,9 @@ const difficultyColor: Record<string, string> = {
 
                         visibleCount++;
 
-                        // Re-init chart for this card
+                        // Re-init chart for this card (to fix any layout issues after move)
                         const canvas = card.querySelector('canvas');
                         if (canvas) initRadar(canvas as HTMLCanvasElement);
-                    } else {
-                        card.style.display = 'none';
                     }
                 });
 
@@ -725,7 +737,9 @@ const difficultyColor: Record<string, string> = {
                     }
 
                     // Update UI buttons
-                    document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]`).forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]`).forEach(b => {
+                        b.classList.remove('active');
+                    });
                     btn.classList.add('active');
 
                     // Apply filters
