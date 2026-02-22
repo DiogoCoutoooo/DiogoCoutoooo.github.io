@@ -30,7 +30,15 @@ function parseFrontmatter(text) {
         const idx = line.indexOf(':');
         if (idx === -1) return;
         const key = line.slice(0, idx).trim();
-        const value = line.slice(idx + 1).trim();
+        let value = line.slice(idx + 1).trim();
+        
+        // Remove wrap-around quotes if they exist
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.slice(1, -1);
+        } else if (value.startsWith("'") && value.endsWith("'")) {
+            value = value.slice(1, -1);
+        }
+        
         result[key] = value;
     });
     return result;
