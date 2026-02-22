@@ -21,11 +21,13 @@ jobs:
       - name: Sync Machines
         run: node scripts/sync-machines.js
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.MY_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           
       - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add src/data/machines.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update machines data [skip ci]" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update machines data" && git push)
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
