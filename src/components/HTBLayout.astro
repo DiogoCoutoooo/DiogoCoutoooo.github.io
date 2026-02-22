@@ -8,6 +8,7 @@ interface Props {
 }
 
 const { title, os, difficulty, pwnedDate, avatar } = Astro.props;
+import GlobalEffects from './GlobalEffects.astro';
 ---
 
 <html lang="pt">
@@ -25,17 +26,10 @@ const { title, os, difficulty, pwnedDate, avatar } = Astro.props;
 				font-family: 'JetBrains Mono', monospace;
 				line-height: 1.6;
 				overflow-x: hidden;
+                cursor: none;
 			}
 
-			/* Noise overlay like main page */
-			.noise-overlay {
-				position: fixed;
-				top: -50%; left: -50%; width: 200%; height: 200%;
-				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3BaseFilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/feFilter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-				opacity: 0.04;
-				pointer-events: none; 
-				z-index: 9999;
-			}
+			/* Noise overlay agora no GlobalEffects.astro */
 
 			.container {
 				max-width: 900px;
@@ -169,7 +163,7 @@ const { title, os, difficulty, pwnedDate, avatar } = Astro.props;
 		</style>
 	</head>
 	<body>
-		<div class="noise-overlay"></div>
+		<GlobalEffects />
 		<main class="container">
 			<a href="/" class="back-link">← Terminal_Main</a>
 			
