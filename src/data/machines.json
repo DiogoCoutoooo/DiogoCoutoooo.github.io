@@ -49,5 +49,22 @@
       "CTF": 60
     },
     "folder": "Easy"
+  },
+  {
+    "id": "teste2",
+    "title": "Teste2",
+    "os": "MacOS",
+    "difficulty": "Insane",
+    "pwnedDate": "08 Feb 2026",
+    "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Teste2.png",
+    "description": "\"testetsteste\"",
+    "matrix": {
+      "ENUM": 20,
+      "REAL": 30,
+      "CVE": 60,
+      "CUSTOM": 70,
+      "CTF": 0
+    },
+    "folder": "Easy"
   }
 ]
