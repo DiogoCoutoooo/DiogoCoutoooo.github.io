@@ -1,22 +1,5 @@
 [
   {
-    "id": "keeper",
-    "title": "Keeper",
-    "os": "MacOS",
-    "difficulty": "Medium",
-    "pwnedDate": "23 Feb 2029",
-    "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Keeper.png",
-    "description": "nigga",
-    "matrix": {
-      "ENUM": 50,
-      "REAL": 30,
-      "CVE": 80,
-      "CUSTOM": 60,
-      "CTF": 10
-    },
-    "folder": "Easy"
-  },
-  {
     "id": "cap",
     "title": "Cap",
     "os": "Linux",
