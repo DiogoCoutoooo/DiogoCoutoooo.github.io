@@ -1,24 +1,142 @@
 ---
-import { getCollection, render } from 'astro:content';
 import HTBLayout from '../../components/HTBLayout.astro';
+import machinesData from '../../data/machines.json';
+
 
 export async function getStaticPaths() {
-  const entries = await getCollection('htb');
-  return entries.map(entry => ({
-    params: { slug: entry.id }, props: { entry },
+  return machinesData.map(machine => ({
+    params: { slug: machine.id },
+    props: { machine },
   }));
 }
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { machine } = Astro.props;
+
+// Construct GitHub URL for the writeup
+// Based on the user's information: github.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/
+// Note: We'll assume the writeup is named exactly like the id or title in the respective folder.
+// The user mentions: "ir buscar a informação ao mesmo repo... no .md que eu fiz (o writeup)"
+// Looking at the avatar URL: https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Cap.png
+// The writeups are likely in the parent folder or organized by difficulty.
+const folder = machine.folder || "Easy";
+const githubRawBase = "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process";
+const writeupUrl = `${githubRawBase}/${folder}/${machine.title}.md`;
+
+let content = "";
+let error = null;
+
+try {
+  const response = await fetch(writeupUrl);
+  if (response.ok) {
+    const rawMarkdown = await response.text();
+    
+    // Robust splitting to skip Frontmatter and Obsidian Card
+    // Obsidian cards and metadata are usually separated by '---' on their own line
+    const parts = rawMarkdown.split(/^---$/m);
+    const hasFrontmatter = rawMarkdown.trimStart().startsWith('---');
+    
+    let processedMarkdown = rawMarkdown;
+
+    if (hasFrontmatter) {
+      // Case with Frontmatter: [Empty, Meta, Card/Content, Content?]
+      // If there's a card AND a separator after it, content starts at index 3
+      if (parts.length >= 4) {
+        processedMarkdown = parts.slice(3).join('---').trim();
+      } else if (parts.length >= 3) {
+        // No extra card separator, or card is being treated as content
+        processedMarkdown = parts.slice(2).join('---').trim();
+      }
+    } else {
+      // Case without Frontmatter: [Card, Content, Content?]
+      if (parts.length >= 2) {
+        processedMarkdown = parts.slice(1).join('---').trim();
+      }
+    }
+
+    // Use a fresh Marked instance to avoid configuration leaks
+    const { Marked } = await import('marked');
+    const markedInstance = new Marked();
+
+    // Use marked with Shiki for syntax highlighting
+    const { codeToHtml } = await import('shiki');
+    
+    // Configure marked to handle async highlighting
+    markedInstance.use({
+      async walkTokens(token) {
+        if (token.type === 'code') {
+          // Default to 'bash' if no language is specified, common in CTF writeups
+          const lang = token.lang || 'bash';
+          try {
+            token.text = await codeToHtml(token.text, {
+              lang: lang,
+              theme: 'github-dark'
+            });
+            (token as any).isHighlighted = true;
+          } catch (e) {
+            console.error(`Shiki error for lang [${lang}]:`, e);
+            (token as any).isHighlighted = false;
+          }
+        }
+      },
+      renderer: {
+        code(token) {
+          const anyToken = token as any;
+          if (anyToken.isHighlighted) {
+            // Shiki already returns <pre><code>...</code></pre>
+            return anyToken.text;
+          }
+           // Fallback for non-highlighted code
+           console.log(`Fallback rendering for code block (lang: ${anyToken.lang})`);
+           return `<pre><code class="language-${anyToken.lang}">${anyToken.text}</code></pre>`;
+        }
+      }
+    });
+
+    content = await markedInstance.parse(processedMarkdown, { async: true });
+  } else {
+    error = `Falha ao carregar o writeup: ${response.status} ${response.statusText}`;
+    console.error(`Error fetching ${writeupUrl}:`, response.status);
+  }
+} catch (e) {
+  error = "Erro de conexão ao carregar o writeup.";
+  console.error(e);
+}
 ---
 
 <HTBLayout 
-  title={entry.data.title}
-  os={entry.data.os}
-  difficulty={entry.data.difficulty}
-  pwnedDate={entry.data.pwnedDate}
-  avatar={entry.data.avatar}
+  title={machine.title}
+  os={machine.os}
+  difficulty={machine.difficulty}
+  pwnedDate={machine.pwnedDate}
+  avatar={machine.avatar}
 >
-  <Content />
+  {error ? (
+    <div class="error-box">
+      <p>// {error}</p>
+      <p>URL tentada: <a href={writeupUrl} target="_blank">{writeupUrl}</a></p>
+    </div>
+  ) : (
+    <div class="markdown-content" set:html={content} />
+  )}
 </HTBLayout>
+
+<style>
+  .error-box {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid #e74c3c;
+    padding: 20px;
+    border-radius: 4px;
+    color: #e74c3c;
+    font-family: 'JetBrains Mono', monospace;
+    margin: 40px 0;
+  }
+  .error-box a {
+    color: #fff;
+    text-decoration: underline;
+  }
+  
+  /* Estilização extra para o conteúdo markdown se necessário */
+  .markdown-content {
+      color: rgba(255, 255, 255, 0.9);
+  }
+</style>

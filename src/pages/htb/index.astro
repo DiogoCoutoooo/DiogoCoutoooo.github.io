@@ -3,6 +3,7 @@
 // Fetches ALL machines from GitHub and renders the archive grid dynamically.
 import htbLogo from '../../assets/images/htb_logo.png';
 import GlobalEffects from '../../components/GlobalEffects.astro';
+import { Image } from 'astro:assets';
 
 import machinesData from '../../data/machines.json';
 
@@ -195,7 +196,7 @@ const difficultyColor: Record<string, string> = {
 				transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
                 position: relative;
                 overflow: hidden;
-                display: grid;
+				display: grid;
                 grid-template-columns: 53% 47%;
                 grid-template-rows: 1fr auto;
                 grid-template-areas: 
@@ -203,6 +204,10 @@ const difficultyColor: Record<string, string> = {
                     "btn chart";
                 align-items: stretch;
                 width: 100%;
+                background-image: 
+                    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+                background-size: 30px 30px;
 			}
 
             .htb-card::before {
@@ -265,6 +270,8 @@ const difficultyColor: Record<string, string> = {
 			}
 
 			.htb-machine-meta span b { color: #9acd32; }
+
+            .mobile-only-meta { display: none; }
 
 			.diff-badge {
 				display: inline-block;
@@ -339,6 +346,7 @@ const difficultyColor: Record<string, string> = {
 			}
 
 			@media (max-width: 1200px) {
+                .mobile-only-meta { display: block; }
 				.htb-grid { 
                     flex-direction: column;
                     align-items: center;
@@ -355,6 +363,7 @@ const difficultyColor: Record<string, string> = {
                     gap: 30px;
                     margin-left: auto;
                     margin-right: auto;
+                    background-size: 20px 20px;
                 }
                 .htb-card-info, 
                 .htb-chart-wrapper,
@@ -367,11 +376,11 @@ const difficultyColor: Record<string, string> = {
                     aspect-ratio: 1; 
                     max-height: 400px; 
                     justify-content: center;
-                    order: 2;
+                    order: 2; /* Radar stays in middle */
                 }
                 .htb-card-info { order: 1; }
                 .htb-view-btn { 
-                    order: 3; 
+                    order: 3; /* Button goes to bottom */
                     width: 100%;
                     padding: 12px;
                 }
@@ -516,11 +525,12 @@ const difficultyColor: Record<string, string> = {
                                     <div class="htb-card-info">
                                         <div class="htb-machine-header">
                                             {machine.avatar && (
-                                                <img
+                                                <Image
                                                     src={machine.avatar}
                                                     alt={machine.title}
                                                     class="htb-machine-avatar"
-                                                    onerror="this.src='/favicon.svg'"
+                                                    width={48}
+                                                    height={48}
                                                 />
                                             )}
                                             <div class={machine.avatar ? "" : "no-avatar-offset"}>
@@ -532,6 +542,7 @@ const difficultyColor: Record<string, string> = {
                                         </div>
                                         <div class="htb-machine-meta">
                                             <span><b>OS:</b> {machine.os}</span>
+                                            <span class="mobile-only-meta"><b>DIFFICULTY:</b> {machine.difficulty}</span>
                                             <span><b>Pwned:</b> {machine.pwnedDate}</span>
                                         </div>
                                         <p class="htb-description">{machine.description}</p>
@@ -693,7 +704,7 @@ const difficultyColor: Record<string, string> = {
                 }
 
                 cards.forEach(card => {
-                    card.style.display = 'none';
+                    card.classList.add('hidden');
                     masterList.appendChild(card);
                 });
 
@@ -707,7 +718,7 @@ const difficultyColor: Record<string, string> = {
                     const osMatch = os === 'all' || cardOS === os;
 
                     if (diffMatch && osMatch) {
-                        card.style.display = 'grid';
+                        card.classList.remove('hidden');
 
                         // Real Masonry distribution
                         if (window.innerWidth > 1200) {

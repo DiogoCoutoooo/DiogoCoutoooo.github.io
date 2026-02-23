@@ -1,6 +1,8 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+//BACKUP, NOT USED
+
 const htb = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/htb" }),
   schema: z.object({

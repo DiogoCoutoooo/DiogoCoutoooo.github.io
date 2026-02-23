@@ -9,6 +9,13 @@ import machinesData from '../data/machines.json';
 const displayMachines = machinesData.length > 0 ? [machinesData[0]] : [];
 
 const getMachineImage = (title: string, avatar: string) => avatar;
+
+const difficultyColor: Record<string, string> = {
+    Easy:   '#9acd32',
+    Medium: '#f39c12',
+    Hard:   '#e74c3c',
+    Insane: '#ffffff',
+};
 ---
 <html lang="pt">
     <head>
@@ -404,11 +411,19 @@ const getMachineImage = (title: string, avatar: string) => avatar;
 				overflow: hidden;
 				display: grid;
 				grid-template-columns: 1.2fr 1fr;
+                grid-template-rows: 1fr auto;
+                grid-template-areas: 
+                    "info chart"
+                    "btn chart";
 				gap: 40px;
 				transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
                 max-width: 900px;
                 width: 100%;
-                opacity: 1 !important; /* Garantir visibilidade imediata */
+                opacity: 1 !important;
+                background-image: 
+                    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+                background-size: 30px 30px;
 			}
 
 			.htb-card:hover {
@@ -418,6 +433,7 @@ const getMachineImage = (title: string, avatar: string) => avatar;
 			}
 
             .htb-card-info {
+                grid-area: info;
 				display: flex;
 				flex-direction: column;
 				gap: 15px;
@@ -466,7 +482,24 @@ const getMachineImage = (title: string, avatar: string) => avatar;
 				margin-top: 10px;
 			}
 
+            .diff-badge {
+				display: inline-block;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.6rem;
+				padding: 2px 8px;
+				border-radius: 2px;
+				font-weight: 700;
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+                border: 1px solid;
+                width: fit-content;
+                border: 1px solid rgba(154, 205, 50, 0.3);
+                background: rgba(154, 205, 50, 0.05);
+                margin-top: 4px;
+			}
+
 			.htb-chart-wrapper {
+                grid-area: chart;
 				position: relative;
 				width: 100%;
 				height: 100%;
@@ -476,7 +509,8 @@ const getMachineImage = (title: string, avatar: string) => avatar;
 			}
 
 			.htb-view-btn {
-				margin-top: auto;
+                grid-area: btn;
+				margin-top: 20px;
 				padding: 10px 20px;
 				background: transparent;
 				border: 1px solid rgba(255, 255, 255, 0.2);
@@ -494,6 +528,7 @@ const getMachineImage = (title: string, avatar: string) => avatar;
                 pointer-events: auto;
                 position: relative;
                 z-index: 20;
+                align-self: end;
 			}
 
 			.htb-view-btn:hover {
@@ -554,11 +589,22 @@ const getMachineImage = (title: string, avatar: string) => avatar;
 
 			@media (max-width: 900px) {
 				.htb-card {
-					grid-template-columns: 1fr;
+					display: flex;
+                    flex-direction: column;
+                    padding: 30px;
+                    gap: 30px;
+                    background-size: 20px 20px;
 				}
+                .htb-card-info { order: 1; }
 				.htb-chart-wrapper {
 					aspect-ratio: 1;
+                    order: 2;
 				}
+                .htb-view-btn {
+                    order: 3;
+                    width: 100%;
+                    margin-top: 0;
+                }
 			}
 
         </style>
@@ -635,7 +681,12 @@ const getMachineImage = (title: string, avatar: string) => avatar;
                                 <div class="htb-card-info">
                                     <div class="htb-machine-header">
                                         <Image src={getMachineImage(machine.title, machine.avatar) as any} alt={machine.title} class="htb-machine-avatar" width={50} height={50} />
-                                        <h3 class="htb-machine-name">{machine.title}</h3>
+                                        <div>
+                                            <h3 class="htb-machine-name">{machine.title}</h3>
+                                            <span class="diff-badge" style={`color: ${difficultyColor[machine.difficulty]}; border-color: ${difficultyColor[machine.difficulty]}; background: ${difficultyColor[machine.difficulty]}18`}>
+                                                {machine.difficulty}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div class="htb-machine-meta">
                                         <span><b>OS:</b> {machine.os}</span>
@@ -643,12 +694,12 @@ const getMachineImage = (title: string, avatar: string) => avatar;
                                         <span><b>Pwned:</b> {machine.pwnedDate}</span>
                                     </div>
                                     <p class="htb-description">{machine.description || 'Descobre os passos e a lógica que utilizei para dominar esta máquina.'}</p>
-                                    <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup</a>
                                 </div>
                                 <div class="htb-chart-wrapper">
                                     <canvas id={`chart-${machine.title.toLowerCase()}`} 
                                             data-matrix={JSON.stringify(machine.matrix)}></canvas>
                                 </div>
+                                <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup</a>
                             </div>
                         </div>
                     ))}
