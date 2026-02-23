@@ -12,7 +12,7 @@ const difficultyColor: Record<string, string> = {
     Easy:   '#9acd32',
     Medium: '#f39c12',
     Hard:   '#e74c3c',
-    Insane: '#9b59b6',
+    Insane: '#ffffff',
 };
 ---
 
@@ -387,6 +387,10 @@ const difficultyColor: Record<string, string> = {
                 font-family: 'JetBrains Mono', monospace;
             }
 
+            .hidden {
+                display: none !important;
+            }
+
             .filter-group {
                 display: flex;
                 align-items: center;
@@ -440,13 +444,16 @@ const difficultyColor: Record<string, string> = {
             }
 
             .no-results {
-                grid-column: 1 / -1;
                 text-align: center;
-                padding: 50px;
+                padding: 40px 20px;
                 opacity: 0.4;
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 0.8rem;
-                letter-spacing: 0.2em;
+                letter-spacing: 0.15em;
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px dashed rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+                margin-top: 0;
             }
 		</style>
 	</head>
@@ -542,9 +549,8 @@ const difficultyColor: Record<string, string> = {
                         })}
                     </div>
 
-                    <div id="no-results" class="no-results hidden">// No more machines match these filters</div>
-                    
                     <div class="htb-grid" id="machinesGrid">
+                        <div id="no-results" class="no-results hidden">// No more machines match these filters</div>
                         <div class="htb-column" id="col-left"></div>
                         <div class="htb-column" id="col-right"></div>
                     </div>
@@ -664,8 +670,6 @@ const difficultyColor: Record<string, string> = {
 
             // Filtering Logic
             const filterBtns = document.querySelectorAll('.filter-btn');
-            const noResults = document.getElementById('no-results');
-            const pwnedCountEl = document.getElementById('pwned-count');
 
             let activeDifficulty = 'all';
             let activeOS = 'all';
@@ -677,9 +681,17 @@ const difficultyColor: Record<string, string> = {
                 const masterList = document.getElementById('master-machines-list')!;
                 const colLeft = document.getElementById('col-left')!;
                 const colRight = document.getElementById('col-right')!;
+                const noResults = document.getElementById('no-results');
+                const machinesGrid = document.getElementById('machinesGrid');
+                const pwnedCountEl = document.getElementById('pwned-count');
                 const cards = Array.from(document.querySelectorAll('.machine-card')) as HTMLElement[];
 
-                // Move all cards back to storage first (clears columns without destroying elements)
+                // Reset: Move all cards and the footer message back to storage/root
+                if (noResults && machinesGrid) {
+                    noResults.classList.add('hidden');
+                    machinesGrid.prepend(noResults); // Move out of columns
+                }
+
                 cards.forEach(card => {
                     card.style.display = 'none';
                     masterList.appendChild(card);
@@ -697,12 +709,19 @@ const difficultyColor: Record<string, string> = {
                     if (diffMatch && osMatch) {
                         card.style.display = 'grid';
 
-                        // Distribute to shorter column
+                        // Real Masonry distribution
                         if (window.innerWidth > 1200) {
-                            if (colLeft.children.length <= colRight.children.length) {
+                            // If it's the first card, always go left to prioritize
+                            if (visibleCount === 0) {
                                 colLeft.appendChild(card);
                             } else {
-                                colRight.appendChild(card);
+                                const leftHeight = colLeft.offsetHeight;
+                                const rightHeight = colRight.offsetHeight;
+                                if (leftHeight <= rightHeight) {
+                                    colLeft.appendChild(card);
+                                } else {
+                                    colRight.appendChild(card);
+                                }
                             }
                         } else {
                             colLeft.appendChild(card);
@@ -710,7 +729,7 @@ const difficultyColor: Record<string, string> = {
 
                         visibleCount++;
 
-                        // Re-init chart for this card (to fix any layout issues after move)
+                        // Re-init chart for this card
                         const canvas = card.querySelector('canvas');
                         if (canvas) initRadar(canvas as HTMLCanvasElement);
                     }
@@ -719,9 +738,31 @@ const difficultyColor: Record<string, string> = {
                 // Update machine count
                 if (pwnedCountEl) pwnedCountEl.innerText = visibleCount.toString();
 
-                // Handle no results
-                if (visibleCount === 0) noResults?.classList.remove('hidden');
-                else noResults?.classList.add('hidden');
+                // Handle footer message positioning
+                if (noResults) {
+                    if (visibleCount === 0) {
+                        noResults.innerText = "// No machines match these filters";
+                        colLeft.appendChild(noResults);
+                    } else {
+                        noResults.innerText = "// No more machines match these filters";
+                        
+                        // Always check heights again for the footer
+                        if (window.innerWidth > 1200) {
+                            const leftHeight = colLeft.offsetHeight;
+                            const rightHeight = colRight.offsetHeight;
+                            
+                            // If heights are equal, prioritize right for footer if machines are on left
+                            if (leftHeight > rightHeight) {
+                                colRight.appendChild(noResults);
+                            } else {
+                                colLeft.appendChild(noResults);
+                            }
+                        } else {
+                            colLeft.appendChild(noResults);
+                        }
+                    }
+                    noResults.classList.remove('hidden');
+                }
             }
 
             filterBtns.forEach(btn => {
