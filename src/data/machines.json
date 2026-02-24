@@ -1,5 +1,22 @@
 [
   {
+    "id": "twomillion",
+    "title": "TwoMillion",
+    "os": "Linux",
+    "difficulty": "Easy",
+    "pwnedDate": "24 Feb 2026",
+    "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_TwoMillion.png",
+    "description": "A Command Injection vulnerability in the /api/v1/admin/vpn/generate endpoint allowed for arbitrary code execution by manipulating the username parameter within the JSON payload. By injecting a Bash one-liner after a semicolon delimiter, a stable Reverse Shell was established as the www-data service user.  Local enumeration revealed a .env file containing cleartext database credentials (admin:SuperDuperPass123). While password reuse was unsuccessful for direct SSH access, the credentials granted access to the internal MariaDB instance, where administrative bcrypt hashes were exfiltrated from the users table. Final access to the user flag was achieved by leveraging local enumeration of the /var/mail/www-data file, which pointed towards an outdated Kernel version. This led to the exploitation of a Kernel Exploit (CVE-2023-0386 / OverlayFS) to bypass file system permissions and read the user flag located in /home/admin/user.txt.  TODO: root flag",
+    "matrix": {
+      "ENUM": 60,
+      "REAL": 60,
+      "CVE": 60,
+      "CUSTOM": 40,
+      "CTF": 40
+    },
+    "folder": "Easy"
+  },
+  {
     "id": "cap",
     "title": "Cap",
     "os": "Linux",
@@ -8,11 +25,11 @@
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Cap.png",
     "description": "Exposed IDOR vulnerability in the web dashboard allowed for the download of other users' network captures. Analysis of a specific PCAP file revealed cleartext FTP credentials. After gaining a shell, local enumeration showed that Python 3.8 was configured with dangerous capabilities (cap_setuid,cap_net_bind_service+eip). This misconfiguration allowed for an immediate privilege escalation to root by manipulating the process UID via a simple python script.",
     "matrix": {
-      "ENUM": 60,
+      "ENUM": 50,
       "REAL": 40,
       "CVE": 40,
-      "CUSTOM": 80,
-      "CTF": 90
+      "CUSTOM": 50,
+      "CTF": 60
     },
     "folder": "Easy"
   },
@@ -26,9 +43,9 @@
     "description": "Exposed IKE port allowed for aggressive mode sniffing, leading to the crack of a Pre-Shared Key (PSK). This provided access to a VPN tunnel where internal services were reachable. After pivoting, a cleartext password was found in a configuration file, granting SSH access. Final privilege escalation was achieved by exploiting a misconfigured SUID binary to execute commands as root.",
     "matrix": {
       "ENUM": 80,
-      "REAL": 70,
-      "CVE": 50,
-      "CUSTOM": 40,
+      "REAL": 80,
+      "CVE": 20,
+      "CUSTOM": 30,
       "CTF": 60
     },
     "folder": "Easy"
