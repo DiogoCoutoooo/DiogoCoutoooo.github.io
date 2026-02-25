@@ -5,11 +5,30 @@ interface Props {
 	difficulty: string;
 	pwnedDate: string;
 	avatar: string;
+	status?: string;
 }
 
-const { title, os, difficulty, pwnedDate, avatar } = Astro.props;
+const { title, os, difficulty, pwnedDate, avatar, status = "Root Pwned" } = Astro.props;
 import GlobalEffects from './GlobalEffects.astro';
 import { Image } from 'astro:assets';
+
+const difficultyColor: Record<string, string> = {
+    Easy:   '#9acd32',
+    Medium: '#f39c12',
+    Hard:   '#e74c3c',
+    Insane: '#ffffff',
+};
+
+const diffColor = difficultyColor[difficulty] || '#9acd32';
+
+// Status colors
+const statusColors: Record<string, { bg: string, text: string }> = {
+    "Root Pwned": { bg: "#9acd32", text: "#000" },
+    "User Pwned": { bg: "#f39c12", text: "#000" },
+    "Not Pwned": { bg: "#3e444d", text: "#fff" }
+};
+
+const currentStatus = statusColors[status] || statusColors["Root Pwned"];
 ---
 
 <html lang="pt">
@@ -29,8 +48,6 @@ import { Image } from 'astro:assets';
 				overflow-x: hidden;
                 cursor: none;
 			}
-
-			/* Noise overlay agora no GlobalEffects.astro */
 
 			.container {
 				max-width: 1300px;
@@ -59,30 +76,27 @@ import { Image } from 'astro:assets';
 				align-items: center;
 				gap: 40px;
 				margin-bottom: 60px;
-				background: rgba(255, 255, 255, 0.02);
+				background: rgba(255, 255, 255, 0.05);
 				padding: 50px;
-				border: 1px solid rgba(255, 255, 255, 0.05);
+				border: 1px solid rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(12px);
 				border-radius: 4px;
                 position: relative;
                 overflow: hidden;
-                background-image: 
-                    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-                background-size: 30px 30px;
 			}
             
             .machine-header::before {
                 content: "";
                 position: absolute;
                 top: 0; left: 0; width: 4px; height: 100%;
-                background: #9acd32;
+                background: var(--diff-color);
             }
 
 			.avatar {
 				width: 140px;
 				height: 140px;
 				border-radius: 50%;
-				border: 2px solid #9acd32;
+				border: 2px solid var(--diff-color);
 				padding: 6px;
                 background: #050505;
                 flex-shrink: 0;
@@ -108,7 +122,7 @@ import { Image } from 'astro:assets';
 			}
 
 			.meta-item b {
-				color: #9acd32;
+				color: var(--diff-color);
 				display: block;
 				margin-bottom: 8px;
                 font-size: 0.65rem;
@@ -159,13 +173,6 @@ import { Image } from 'astro:assets';
 
             .writeup-content > * {
                 margin-bottom: 25px;
-            }
-
-            .writeup-content pre, 
-            .writeup-content blockquote,
-            .writeup-content img {
-                width: 100%;
-                box-sizing: border-box;
             }
 
 			.writeup-content h2 {
@@ -265,19 +272,19 @@ import { Image } from 'astro:assets';
 
             /* Scrollbar experimental para Chrome/Edge/Safari */
             .writeup-content pre::-webkit-scrollbar {
-                height: 10px; /* Mais grossa */
+                height: 10px;
             }
             .writeup-content pre::-webkit-scrollbar-track {
                 background: rgba(255, 255, 255, 0.05);
                 border-radius: 0 0 8px 8px;
             }
             .writeup-content pre::-webkit-scrollbar-thumb {
-                background: rgba(154, 205, 50, 0.5); /* Mais opaca por defeito */
+                background: rgba(154, 205, 50, 0.5);
                 border-radius: 10px;
-                border: 1px solid #0d1117; /* Efeito de flutuação */
+                border: 1px solid #0d1117;
             }
             .writeup-content pre:hover::-webkit-scrollbar-thumb {
-                background: #9acd32; /* Brilha no hover */
+                background: #9acd32;
             }
 
 			.writeup-content code {
@@ -291,7 +298,7 @@ import { Image } from 'astro:assets';
 			}
 
             .writeup-content pre code {
-                color: inherit; /* Allow Shiki or parent to decide color */
+                color: inherit;
                 background: none;
                 padding: 0;
                 white-space: pre; 
@@ -328,36 +335,21 @@ import { Image } from 'astro:assets';
             }
 
 			.status-badge {
-				background: #9acd32;
-				color: #000;
-				padding: 2px 8px;
-				font-size: 0.6rem;
+				background: var(--status-bg);
+				color: var(--status-text);
+				padding: 4px 12px;
+				font-size: 0.65rem;
 				font-weight: 800;
-				border-radius: 2px;
-				vertical-align: middle;
-				margin-left: 10px;
-			}
-
-			article img {
-				max-width: 100%;
 				border-radius: 4px;
-				margin: 40px 0;
-				border: 1px solid rgba(255, 255, 255, 0.1);
-			}
-
-			.status-badge {
-				background: #9acd32;
-				color: #000;
-				padding: 2px 8px;
-				font-size: 0.6rem;
-				font-weight: 800;
-				border-radius: 2px;
 				vertical-align: middle;
-				margin-left: 10px;
+				margin-left: 15px;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                display: inline-block;
 			}
 		</style>
 	</head>
-	<body>
+	<body style={`--diff-color: ${diffColor}; --status-bg: ${currentStatus.bg}; --status-text: ${currentStatus.text};`}>
 		<GlobalEffects />
 		<main class="container">
 			<a href="/htb" class="back-link">← Security_Archive</a>
@@ -366,7 +358,7 @@ import { Image } from 'astro:assets';
                 <div class="header-glitch-top">MISSION_REPORT // {title.toUpperCase()}</div>
 				<Image src={avatar} alt={title} class="avatar" width={140} height={140} />
 				<div>
-					<h1>{title} <span class="status-badge">PWNED</span></h1>
+					<h1>{title} <span class="status-badge">{status}</span></h1>
 					<div class="meta-grid">
 						<div class="meta-item"><b>Target_OS</b> {os}</div>
 						<div class="meta-item"><b>Threat_Level</b> {difficulty}</div>
@@ -381,16 +373,13 @@ import { Image } from 'astro:assets';
 		</main>
 
         <script>
-            // Logic for collapsible code blocks
             function setupCollapsibleCode() {
                 const codeBlocks = document.querySelectorAll('.writeup-content pre');
                 const MAX_HEIGHT = 350;
 
                 codeBlocks.forEach(pre => {
-                    // Check if block is already wrapped (avoid double wrapping)
                     if (pre.parentElement?.classList.contains('code-block-wrapper')) return;
 
-                    // Only collapse if the content is taller than our limit
                     if (pre.scrollHeight > MAX_HEIGHT + 50) {
                         const wrapper = document.createElement('div');
                         wrapper.className = 'code-block-wrapper collapsed';
@@ -399,7 +388,6 @@ import { Image } from 'astro:assets';
                         expandBtn.className = 'expand-btn';
                         expandBtn.innerText = '↓ View Full Output [Click to Expand]';
                         
-                        // Wrap the pre
                         pre.parentNode?.insertBefore(wrapper, pre);
                         wrapper.appendChild(pre);
                         wrapper.appendChild(expandBtn);
@@ -409,11 +397,9 @@ import { Image } from 'astro:assets';
                             if (isCollapsed) {
                                 wrapper.classList.remove('collapsed');
                                 expandBtn.innerText = '↑ Collapse Output';
-                                // Optional: adjust parent padding if needed
                             } else {
                                 wrapper.classList.add('collapsed');
                                 expandBtn.innerText = '↓ View Full Output [Click to Expand]';
-                                // Scroll back to top of block if it's now out of view
                                 wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                             }
                         });
@@ -421,10 +407,7 @@ import { Image } from 'astro:assets';
                 });
             }
 
-            // Run on load
             setupCollapsibleCode();
-
-            // Run on dynamic content changes (Lenis/Astro transitions support)
             document.addEventListener('astro:page-load', setupCollapsibleCode);
         </script>
 	</body>

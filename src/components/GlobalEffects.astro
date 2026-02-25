@@ -3,6 +3,7 @@
 ---
 <div class="cursor-follower"></div>
 <div class="noise-overlay"></div>
+<div class="global-grid"></div>
 
 <style is:global>
     * {
@@ -44,6 +45,22 @@
         100% { transform: translate(1%, -1%) }
     }
 
+    /* Global Engineering Grid */
+    .global-grid {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: -1;
+        opacity: 0.5;
+    }
+
     /* Esconder barra de scroll */
     ::-webkit-scrollbar {
         display: none;
@@ -51,6 +68,14 @@
     html {
         -ms-overflow-style: none;
         scrollbar-width: none;
+    }
+    @media (max-width: 768px) {
+        .cursor-follower {
+            display: none !important;
+        }
+        * {
+            cursor: auto !important;
+        }
     }
 </style>
 

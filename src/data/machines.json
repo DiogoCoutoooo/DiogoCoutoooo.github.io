@@ -14,7 +14,8 @@
       "CUSTOM": 40,
       "CTF": 40
     },
-    "folder": "Easy"
+    "folder": "Easy",
+    "status": "User Pwned"
   },
   {
     "id": "cap",
@@ -31,7 +32,8 @@
       "CUSTOM": 50,
       "CTF": 60
     },
-    "folder": "Easy"
+    "folder": "Easy",
+    "status": "Root Pwned"
   },
   {
     "id": "expressway",
@@ -48,6 +50,7 @@
       "CUSTOM": 30,
       "CTF": 60
     },
-    "folder": "Easy"
+    "folder": "Easy",
+    "status": "Root Pwned"
   }
 ]

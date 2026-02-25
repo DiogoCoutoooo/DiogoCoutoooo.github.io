@@ -98,7 +98,8 @@ async function sync() {
                     avatar: `https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_${title}.png`,
                     description: fm.summary || `Write-up and thought process for ${title}.`,
                     matrix,
-                    folder: folder
+                    folder: folder,
+                    status: fm.status || 'Root Pwned'
                 });
             }
         } catch (err) {
