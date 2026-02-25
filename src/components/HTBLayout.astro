@@ -8,7 +8,7 @@ interface Props {
 	status?: string;
 }
 
-const { title, os, difficulty, pwnedDate, avatar, status = "Root Pwned" } = Astro.props;
+const { title, os, difficulty, pwnedDate, avatar, status = "PWNED" } = Astro.props;
 import GlobalEffects from './GlobalEffects.astro';
 import { Image } from 'astro:assets';
 
@@ -23,12 +23,12 @@ const diffColor = difficultyColor[difficulty] || '#9acd32';
 
 // Status colors
 const statusColors: Record<string, { bg: string, text: string }> = {
-    "Root Pwned": { bg: "#9acd32", text: "#000" },
-    "User Pwned": { bg: "#f39c12", text: "#000" },
-    "Not Pwned": { bg: "#3e444d", text: "#fff" }
+    "PWNED":      { bg: "#9acd32", text: "#000" },
+    "USER PWNED": { bg: "#f39c12", text: "#000" },
+    "NOT PWNED":  { bg: "#3e444d", text: "#fff" }
 };
 
-const currentStatus = statusColors[status] || statusColors["Root Pwned"];
+const currentStatus = statusColors[status] || statusColors["PWNED"];
 ---
 
 <html lang="pt">
