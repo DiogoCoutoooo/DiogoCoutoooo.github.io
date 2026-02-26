@@ -4,9 +4,9 @@
     "title": "TwoMillion",
     "os": "Linux",
     "difficulty": "Easy",
-    "pwnedDate": "24 Feb 2026",
+    "pwnedDate": "26 Feb 2026",
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_TwoMillion.png",
-    "description": "Analysis of a minified JavaScript file revealed an internal API used for invite code generation. Deobfuscating the code and making a POST request provided a Base64-encoded invite string. After registering and gaining access to the dashboard, an API enumeration revealed an administrative endpoint at /api/v1/admin/settings/update. By manipulating the JSON parameters in a PUT request, the current user account was elevated to administrative status. This provided access to the /api/v1/admin/vpn/generate endpoint, which was found to be vulnerable to OS Command Injection via the username parameter. Exploiting this vulnerability yielded a reverse shell as www-data. Local enumeration identified cleartext database credentials in a .env file. Password reuse of these credentials allowed for a successful SSH login as the admin user, providing access to the user flag. TODO: root flag",
+    "description": "Analysis of minified JS revealed an API for invite code generation, yielding a Base64-encoded string via a POST request. After registration, API enumeration of the /api/v1/admin/settings/update endpoint allowed for administrative privilege escalation through JSON parameter manipulation in a PUT request. This provided access to /api/v1/admin/vpn/generate, where OS Command Injection in the username parameter yielded a reverse shell as www-data. Local enumeration uncovered database credentials in a .env file, which were reused to gain SSH access as admin. Finally, the system was found vulnerable to CVE-2023-0386 (OverlayFS). By leveraging FUSE to craft a malicious SUID binary and triggering a \"copy-up\" operation, the kernel failed to strip the SUID bit when moving the file to the host's upper directory. Executing this binary granted root privileges, allowing for the retrieval of the final flag.",
     "matrix": {
       "ENUM": 60,
       "REAL": 60,
@@ -15,7 +15,7 @@
       "CTF": 40
     },
     "folder": "Easy",
-    "status": "USER PWNED"
+    "status": "PWNED"
   },
   {
     "id": "cap",
