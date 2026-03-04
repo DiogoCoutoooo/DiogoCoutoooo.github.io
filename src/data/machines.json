@@ -1,5 +1,23 @@
 [
   {
+    "id": "wingdata",
+    "title": "WingData",
+    "os": "Linux",
+    "difficulty": "Easy",
+    "pwnedDate": "04 Mar 2026",
+    "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_WingData.png",
+    "description": "Discovery of a Wing FTP Server (v7.4.3) on the client portal revealed a vulnerability to CVE-2025-47812, an unauthenticated Remote Code Execution (RCE) via a NULL-byte authentication bypass. Exploitation yielded a reverse shell, allowing for the enumeration of the application's data directory where a configuration file and a user database were found. Analysis of settings.xml and wacky.xml provided a salted password hash for the user wacky, which was cracked and used to establish an SSH connection. Local enumeration identified a misconfiguration where the user could execute a Python restoration script as root without a password. Although the script implemented tarfile.extractall(filter=\"data\") to prevent path traversal, the environment was vulnerable to CVE-2024-12718. By crafting a malicious archive with a deeply nested directory structure to bypass the \"data\" filter's validation, a hardlink was used to overwrite /etc/sudoers. This granted the user full sudo privileges, leading to an immediate escalation to root.",
+    "matrix": {
+      "ENUM": 40,
+      "REAL": 80,
+      "CVE": 90,
+      "CUSTOM": 50,
+      "CTF": 50
+    },
+    "folder": "Easy",
+    "status": "PWNED"
+  },
+  {
     "id": "twomillion",
     "title": "TwoMillion",
     "os": "Linux",
