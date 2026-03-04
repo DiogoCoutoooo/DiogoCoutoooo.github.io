@@ -32,11 +32,11 @@ function parseFrontmatter(text) {
         const key = line.slice(0, idx).trim();
         let value = line.slice(idx + 1).trim();
         
-        // Remove wrap-around quotes if they exist
+        // Remove wrap-around quotes if they exist and unescape internal quotes
         if (value.startsWith('"') && value.endsWith('"')) {
-            value = value.slice(1, -1);
+            value = value.slice(1, -1).replace(/\\"/g, '"');
         } else if (value.startsWith("'") && value.endsWith("'")) {
-            value = value.slice(1, -1);
+            value = value.slice(1, -1).replace(/\\'/g, "'");
         }
         
         result[key] = value;
