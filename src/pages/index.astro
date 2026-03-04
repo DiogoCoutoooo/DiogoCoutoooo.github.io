@@ -451,6 +451,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                 object-fit: cover;
                 opacity: 0.8;
                 filter: grayscale(100%) contrast(1.2);
+                transition: filter 0.5s ease, opacity 0.5s ease;
             }
 
             .photo-placeholder:hover img {

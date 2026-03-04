@@ -15,6 +15,7 @@ const { title, os, difficulty, pwnedDate, avatar, status = "PWNED", id = "", hea
 import GlobalEffects from './GlobalEffects.astro';
 import { Image } from 'astro:assets';
 import machinesData from '../data/machines.json';
+import bimpsonBrand from '../assets/images/Bimpson_face.jpeg';
 
 const difficultyColor: Record<string, string> = {
     Easy:   '#9acd32',
@@ -386,6 +387,7 @@ machinesData.forEach(m => {
             	content: "";
             	position: absolute;
             	top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
             	width: 130%; height: 130%;
             	border: 1px solid var(--diff-color);
             	border-radius: 50%;
@@ -395,6 +397,7 @@ machinesData.forEach(m => {
             	content: "";
             	position: absolute;
             	top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
             	width: 160%; height: 160%;
             	border: 1px solid var(--diff-color);
             	border-radius: 50%;
@@ -798,7 +801,7 @@ machinesData.forEach(m => {
 			<!-- Left Sidebar Navigation -->
 			<aside class="left-sidebar">
 				<a href="/" class="sidebar-brand">
-					<img src="/src/assets/images/Bimpson_face.jpeg" alt="DiogoCoutoooo" class="sidebar-brand-avatar" />
+					<Image src={bimpsonBrand} alt="DiogoCoutoooo" class="sidebar-brand-avatar" />
 					<span class="sidebar-brand-name">DiogoCoutoooo</span>
 				</a>
 				<div class="sidebar-section">
