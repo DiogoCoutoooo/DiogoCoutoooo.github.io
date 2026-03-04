@@ -631,14 +631,19 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                                             )}
                                             <div class={machine.avatar ? "" : "no-avatar-offset"}>
                                                 <h3 class="htb-machine-name">{machine.title}</h3>
-                                                <span class="diff-badge" style={`color: ${color}; border-color: ${color}; background: ${color}18`}>
-                                                    {machine.difficulty}
-                                                </span>
-                                                {machine.status && (
-                                                    <span class="status-badge" style={`background: ${statusColors[machine.status]?.bg || '#9acd32'}; color: ${statusColors[machine.status]?.text || '#000'}`}>
-                                                        {machine.status}
+                                                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                                                    <span class="diff-badge" style={`color: ${color}; border-color: ${color}; background: ${color}18`}>
+                                                        {machine.difficulty}
                                                     </span>
-                                                )}
+                                                    <span class="diff-badge" style="color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05);">
+                                                        {machine.os}
+                                                    </span>
+                                                    {machine.status && (
+                                                        <span class="status-badge" style={`margin-left: 0; background: ${statusColors[machine.status]?.bg || '#9acd32'}; color: ${statusColors[machine.status]?.text || '#000'}`}>
+                                                            {machine.status}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="htb-machine-meta">

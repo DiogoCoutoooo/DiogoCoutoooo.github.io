@@ -12,59 +12,57 @@ export async function getStaticPaths() {
 
 const { machine } = Astro.props;
 
-// Construct GitHub URL for the writeup
-// Based on the user's information: github.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/
-// Note: We'll assume the writeup is named exactly like the id or title in the respective folder.
-// The user mentions: "ir buscar a informação ao mesmo repo... no .md que eu fiz (o writeup)"
-// Looking at the avatar URL: https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Cap.png
-// The writeups are likely in the parent folder or organized by difficulty.
 const folder = machine.folder || "Easy";
 const githubRawBase = "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process";
 const writeupUrl = `${githubRawBase}/${folder}/${machine.title}.md`;
 
 let content = "";
 let error = null;
+let headings: { depth: number; text: string; id: string }[] = [];
 
 try {
   const response = await fetch(writeupUrl);
   if (response.ok) {
     const rawMarkdown = await response.text();
     
-    // Robust splitting to skip Frontmatter and Obsidian Card
-    // Obsidian cards and metadata are usually separated by '---' on their own line
     const parts = rawMarkdown.split(/^---$/m);
     const hasFrontmatter = rawMarkdown.trimStart().startsWith('---');
     
     let processedMarkdown = rawMarkdown;
 
     if (hasFrontmatter) {
-      // Case with Frontmatter: [Empty, Meta, Card/Content, Content?]
-      // If there's a card AND a separator after it, content starts at index 3
       if (parts.length >= 4) {
         processedMarkdown = parts.slice(3).join('---').trim();
       } else if (parts.length >= 3) {
-        // No extra card separator, or card is being treated as content
         processedMarkdown = parts.slice(2).join('---').trim();
       }
     } else {
-      // Case without Frontmatter: [Card, Content, Content?]
       if (parts.length >= 2) {
         processedMarkdown = parts.slice(1).join('---').trim();
       }
     }
 
-    // Use a fresh Marked instance to avoid configuration leaks
+    // Handle Obsidian-style Wikilinks for images: ![[image.png]]
+    processedMarkdown = processedMarkdown.replace(/!\[\[(.*?)\]\]/g, (match, filename) => {
+      // Images are in the common "!Media" folder
+      const imageUrl = `${githubRawBase}/!Media/${encodeURIComponent(filename.trim())}`;
+      return `![${filename}](${imageUrl})`;
+    });
+
+    // Also handle standard relative images: ![alt](image.png)
+    processedMarkdown = processedMarkdown.replace(/!\[(.*?)\]\((?!(?:https?:\/\/|\/))(.*?)\)/g, (match, alt, path) => {
+      const imageUrl = `${githubRawBase}/!Media/${encodeURIComponent(path.trim())}`;
+      return `![${alt}](${imageUrl})`;
+    });
+
     const { Marked } = await import('marked');
     const markedInstance = new Marked();
 
-    // Use marked with Shiki for syntax highlighting
     const { codeToHtml } = await import('shiki');
     
-    // Configure marked to handle async highlighting
     markedInstance.use({
       async walkTokens(token) {
         if (token.type === 'code') {
-          // Default to 'bash' if no language is specified, common in CTF writeups
           const lang = token.lang || 'bash';
           try {
             token.text = await codeToHtml(token.text, {
@@ -79,15 +77,17 @@ try {
         }
       },
       renderer: {
-        code(token) {
-          const anyToken = token as any;
-          if (anyToken.isHighlighted) {
-            // Shiki already returns <pre><code>...</code></pre>
-            return anyToken.text;
+        code(token: any) {
+          if (token.isHighlighted) {
+            return token.text;
           }
-           // Fallback for non-highlighted code
-           console.log(`Fallback rendering for code block (lang: ${anyToken.lang})`);
-           return `<pre><code class="language-${anyToken.lang}">${anyToken.text}</code></pre>`;
+          return `<pre><code class="language-${token.lang}">${token.text}</code></pre>`;
+        },
+        heading(token: any) {
+          // Simple ID generation
+          const id = token.text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          headings.push({ depth: token.depth, text: token.text, id });
+          return `<h${token.depth} id="${id}">${token.text}</h${token.depth}>`;
         }
       }
     });
@@ -110,6 +110,9 @@ try {
   pwnedDate={machine.pwnedDate}
   avatar={machine.avatar}
   status={machine.status}
+  id={machine.id}
+  headings={headings}
+  description={machine.description}
 >
   {error ? (
     <div class="error-box">
@@ -136,7 +139,6 @@ try {
     text-decoration: underline;
   }
   
-  /* Estilização extra para o conteúdo markdown se necessário */
   .markdown-content {
       color: rgba(255, 255, 255, 0.9);
   }

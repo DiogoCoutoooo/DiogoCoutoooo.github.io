@@ -6,14 +6,8 @@
     "difficulty": "Easy",
     "pwnedDate": "04 Mar 2026",
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_WingData.png",
-    "description": "Discovery of a Wing FTP Server (v7.4.3) on the client portal revealed a vulnerability to CVE-2025-47812, an unauthenticated Remote Code Execution (RCE) via a NULL-byte authentication bypass. Exploitation yielded a reverse shell, allowing for the enumeration of the application's data directory where a configuration file and a user database were found. Analysis of settings.xml and wacky.xml provided a salted password hash for the user wacky, which was cracked and used to establish an SSH connection. Local enumeration identified a misconfiguration where the user could execute a Python restoration script as root without a password. Although the script implemented tarfile.extractall(filter=\"data\") to prevent path traversal, the environment was vulnerable to CVE-2024-12718. By crafting a malicious archive with a deeply nested directory structure to bypass the \"data\" filter's validation, a hardlink was used to overwrite /etc/sudoers. This granted the user full sudo privileges, leading to an immediate escalation to root.",
-    "matrix": {
-      "ENUM": 40,
-      "REAL": 80,
-      "CVE": 90,
-      "CUSTOM": 50,
-      "CTF": 50
-    },
+    "description": "Discovery of a Wing FTP Server (v7.4.3) on the client portal revealed a vulnerability to CVE-2025-47812, an unauthenticated Remote Code Execution (RCE) via a NULL-byte authentication bypass. Exploitation yielded a reverse shell, allowing for the enumeration of the application's data directory where a configuration file and a user database were found. Analysis of settings.xml and wacky.xml provided a salted password hash for the user wacky, which was cracked and used to establish an SSH connection.",
+    "matrix": { "ENUM": 40, "REAL": 80, "CVE": 90, "CUSTOM": 50, "CTF": 50 },
     "folder": "Easy",
     "status": "PWNED"
   },
@@ -24,14 +18,8 @@
     "difficulty": "Easy",
     "pwnedDate": "26 Feb 2026",
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_TwoMillion.png",
-    "description": "Analysis of minified JS revealed an API for invite code generation, yielding a Base64-encoded string via a POST request. After registration, API enumeration of the /api/v1/admin/settings/update endpoint allowed for administrative privilege escalation through JSON parameter manipulation in a PUT request. This provided access to /api/v1/admin/vpn/generate, where OS Command Injection in the username parameter yielded a reverse shell as www-data. Local enumeration uncovered database credentials in a .env file, which were reused to gain SSH access as admin. Finally, the system was found vulnerable to CVE-2023-0386 (OverlayFS). By leveraging FUSE to craft a malicious SUID binary and triggering a \"copy-up\" operation, the kernel failed to strip the SUID bit when moving the file to the host's upper directory. Executing this binary granted root privileges, allowing for the retrieval of the final flag.",
-    "matrix": {
-      "ENUM": 60,
-      "REAL": 60,
-      "CVE": 60,
-      "CUSTOM": 40,
-      "CTF": 40
-    },
+    "description": "Analysis of minified JS revealed an API for invite code generation, yielding a Base64-encoded string via a POST request. After registration, API enumeration allowed for administrative privilege escalation. OS Command Injection in the username parameter yielded a reverse shell. System was found vulnerable to CVE-2023-0386 (OverlayFS), granting root via SUID manipulation.",
+    "matrix": { "ENUM": 60, "REAL": 60, "CVE": 60, "CUSTOM": 40, "CTF": 40 },
     "folder": "Easy",
     "status": "PWNED"
   },
@@ -42,14 +30,8 @@
     "difficulty": "Easy",
     "pwnedDate": "21 Feb 2026",
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Cap.png",
-    "description": "Exposed IDOR vulnerability in the web dashboard allowed for the download of other users' network captures. Analysis of a specific PCAP file revealed cleartext FTP credentials. After gaining a shell, local enumeration showed that Python 3.8 was configured with dangerous capabilities (cap_setuid,cap_net_bind_service+eip). This misconfiguration allowed for an immediate privilege escalation to root by manipulating the process UID via a simple python script.",
-    "matrix": {
-      "ENUM": 50,
-      "REAL": 40,
-      "CVE": 40,
-      "CUSTOM": 50,
-      "CTF": 60
-    },
+    "description": "Exposed IDOR vulnerability in the web dashboard allowed for the download of other users' network captures. Analysis of a PCAP file revealed cleartext FTP credentials. Local enumeration showed Python 3.8 configured with dangerous capabilities (cap_setuid), allowing immediate privilege escalation to root.",
+    "matrix": { "ENUM": 50, "REAL": 40, "CVE": 40, "CUSTOM": 50, "CTF": 60 },
     "folder": "Easy",
     "status": "PWNED"
   },
@@ -60,14 +42,8 @@
     "difficulty": "Easy",
     "pwnedDate": "18 Feb 2026",
     "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Expressway.png",
-    "description": "Exposed IKE port allowed for aggressive mode sniffing, leading to the crack of a Pre-Shared Key (PSK). This provided access to a VPN tunnel where internal services were reachable. After pivoting, a cleartext password was found in a configuration file, granting SSH access. Final privilege escalation was achieved by exploiting a misconfigured SUID binary to execute commands as root.",
-    "matrix": {
-      "ENUM": 80,
-      "REAL": 80,
-      "CVE": 20,
-      "CUSTOM": 30,
-      "CTF": 60
-    },
+    "description": "Exposed IKE port allowed for aggressive mode sniffing, leading to the crack of a Pre-Shared Key (PSK). This provided access to a VPN tunnel where internal services were reachable. After pivoting, a cleartext password was found in a configuration file, granting SSH access. Final privilege escalation was achieved by exploiting a misconfigured SUID binary.",
+    "matrix": { "ENUM": 80, "REAL": 80, "CVE": 20, "CUSTOM": 30, "CTF": 60 },
     "folder": "Easy",
     "status": "PWNED"
   }
