@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1,
+    "category": "WEB",
+    "difficulty": "LEVEL 1",
+    "title": "The First Crack",
+    "description": "\"Security is just an illusion if the door is ajar.\" <br/> Investigate my code or the guts of this page. Maybe the flag is hidden where you least expect it.",
+    "hash": "af45bbff15926ea21a1a529de41fce9fc133cf3e4f01e9e5bb9ee35c6da07ce1"
+  }
+]

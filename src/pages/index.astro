@@ -37,7 +37,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
 
             body {
                 margin: 0;
-                background-color: #0d0d0d;
+                background-color: #131313;
                 color: #fff;
                 font-family: 'Syne', sans-serif;
                 overflow-x: hidden;
@@ -140,6 +140,63 @@ const statusColors: Record<string, { bg: string, text: string }> = {
             .status-decrypting { color: #ff4d4d; animation: pulse-red 1.5s infinite; }
             .status-secured { color: #00ff41; text-shadow: 0 0 8px rgba(0, 255, 65, 0.5); }
 
+            .ctf-card {
+                background: rgba(154, 205, 50, 0.03);
+                border: 1px solid rgba(154, 205, 50, 0.2);
+                padding: 40px;
+                max-width: 600px;
+                width: 90%;
+                text-align: center;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                text-decoration: none;
+                position: relative;
+                overflow: hidden;
+                z-index: 150; /* Menor que a sticky-bar, maior que o fundo */
+                pointer-events: auto !important; /* Forçar interatividade */
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .ctf-card:hover {
+                background: rgba(154, 205, 50, 0.08);
+                border-color: #9acd32;
+                transform: translateY(-5px);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(154, 205, 50, 0.1);
+            }
+
+            .ctf-card h3 {
+                color: #9acd32;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.5rem;
+                margin: 0 0 10px 0;
+                letter-spacing: 2px;
+            }
+
+            .ctf-card p {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.8rem;
+                opacity: 0.6;
+                margin: 0;
+                color: #fff;
+            }
+
+            .ctf-card .scan-line {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 1px;
+                background: linear-gradient(90deg, transparent, #9acd32, transparent);
+                animation: scan-card 3s infinite linear;
+            }
+
+            @keyframes scan-card {
+                0% { transform: translateY(-100%); top: 0; }
+                100% { transform: translateY(100%); top: 100%; }
+            }
+
             @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
             /* Cursor Follower agora no GlobalEffects.astro */
@@ -180,12 +237,29 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                 padding: 10vh 0;
                 box-sizing: border-box;
             }
-            .cap-1 { min-height: 110vh; background-color: transparent; padding: 0; }
+            /* Estilos das secções - overflow: visible é crucial para a sombra não ser cortada */
+            .cap-1 { position: relative; min-height: 110vh; background-color: transparent; padding: 0; overflow: visible; }
+            .cap-2 { position: relative; overflow: visible; }
+            .cap-htb { position: relative; overflow: visible; }
+            .cap-4 { position: relative; overflow: visible; }
+
             .cap-2, .cap-htb, .cap-4 { 
                 min-height: 100vh; 
                 background-color: transparent; 
+                display: flex; 
+                flex-direction: column;
+                align-items: center;
                 justify-content: center;
                 gap: 5vh;
+            }
+
+            /* Ajustes específicos para a secção de Projetos */
+            .cap-2 h2 {
+                margin-top: -10vh; /* Sobe o título Projects */
+            }
+
+            .cap-2 .ctf-card {
+                margin-top: 5vh; /* Desce o cartão CTF */
             }
             section h2 {
                 font-size: clamp(2.5rem, 10vw, 8rem);
@@ -203,20 +277,97 @@ const statusColors: Record<string, { bg: string, text: string }> = {
             .biography span { color: #555; transition: color 0.5s; }
             .biography span:hover { color: #fff; }
 
+            /* Contact Grid Styles */
+            .contact-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Aumentado para dar mais espaço */
+                gap: 30px;
+                width: 100%;
+                max-width: 1200px;
+                margin-top: 60px;
+            }
+
+            .contact-item {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                padding: 45px 30px; /* Mais padding vertical */
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                text-decoration: none;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                position: relative;
+                overflow: hidden;
+                min-height: 220px; /* Altura mínima garantida */
+                justify-content: center;
+            }
+
+            .contact-item::before {
+                content: "";
+                position: absolute;
+                top: 0; left: 0; width: 100%; height: 3px;
+                background: #9acd32;
+                transform: scaleX(0);
+                transform-origin: left;
+                transition: transform 0.4s ease;
+            }
+
+            .contact-item:hover {
+                background: rgba(255, 255, 255, 0.04);
+                transform: translateY(-10px);
+                border-color: rgba(154, 205, 50, 0.4);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            }
+
+            .contact-item:hover::before {
+                transform: scaleX(1);
+            }
+
+            .contact-label {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.75rem;
+                color: #9acd32;
+                opacity: 0.5;
+                text-transform: uppercase;
+                letter-spacing: 0.3em;
+            }
+
+            .contact-value {
+                font-size: 1.8rem; /* Aumentado */
+                color: #fff;
+                font-weight: 800;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+
+            .contact-link-text {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.85rem;
+                color: #888;
+                transition: color 0.3s;
+            }
+
+            .contact-item:hover .contact-link-text {
+                color: #9acd32;
+            }
+
             .sticky-bar {
                 position: absolute; 
                 bottom: 0; 
                 left: 0; 
                 width: 100%; 
                 height: 50px;
-                background: linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 1) 100%);
+                background: #131313;
                 backdrop-filter: blur(10px);
-                border-top: 1px solid rgba(0, 255, 65, 0.4);
+                border-top: 1px solid rgba(0, 255, 65, 0.4); /* Verde Original */
+                border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+                box-shadow: 0 10px 35px 5px rgba(0,0,0,1);
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
-                z-index: 100;
-                overflow: hidden;
+                z-index: 9999; /* Máxima prioridade para não ser atropelada */
+                overflow: visible;
             }
             
             .sticky-bar::before {
@@ -226,16 +377,15 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                 left: 0;
                 width: 100%;
                 height: 1px;
-                background: linear-gradient(90deg, transparent, #00ff41, transparent);
+                background: linear-gradient(90deg, transparent, #00ff41, transparent); /* Verde Original */
                 opacity: 0.3;
             }
 
             .is-locked { 
                 position: fixed; 
                 bottom: auto; 
-                background: #0d0d0d !important; /* Totalmente opaco para tapar o que está atrás */
-                border-bottom: 1px solid rgba(0, 255, 65, 0.1);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                z-index: 9999;
+                background: #131313 !important; /* Totalmente opaco para tapar o que está atrás */
             }
 
             .nav-button {
@@ -660,6 +810,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
 				line-height: 1.6;
 				opacity: 0.8;
 				margin-top: 10px;
+				text-align: justify;
 			}
 
             .diff-badge {
@@ -1032,6 +1183,12 @@ const statusColors: Record<string, { bg: string, text: string }> = {
             <section id="cap2" class="cap-2">
                 <h2>PROJECTS</h2>
 
+                <a href="/ctf" class="ctf-card" style="cursor: none;">
+                    <div class="scan-line"></div>
+                    <h3>EXE::CTF_ZONE</h3>
+                    <p>Submit your flags and prove your hacking skills.</p>
+                </a>
+
                 <div class="sticky-bar" data-target="#cap2">
                     <div class="sticky-meta">
                         <span>0x01_PROJ</span>
@@ -1061,6 +1218,9 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                                             <span class="diff-badge" style={`color: ${difficultyColor[machine.difficulty]}; border-color: ${difficultyColor[machine.difficulty]}; background: ${difficultyColor[machine.difficulty]}18`}>
                                                 {machine.difficulty}
                                             </span>
+                                            <span class="diff-badge" style="color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); margin-left: 8px;">
+                                                {machine.os}
+                                            </span>
                                             {machine.status && (
                                                 <span class="status-badge" style={`background: ${statusColors[machine.status]?.bg || '#9acd32'}; color: ${statusColors[machine.status]?.text || '#000'}`}>
                                                     {machine.status}
@@ -1069,8 +1229,6 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                                         </div>
                                     </div>
                                     <div class="htb-machine-meta">
-                                        <span><b>OS:</b> {machine.os}</span>
-                                        <span><b>Difficulty:</b> {machine.difficulty}</span>
                                         <span><b>Pwned:</b> {machine.pwnedDate}</span>
                                     </div>
                                     <p class="htb-description">{machine.description || 'Descobre os passos e a lógica que utilizei para dominar esta máquina.'}</p>
@@ -1101,14 +1259,37 @@ const statusColors: Record<string, { bg: string, text: string }> = {
             </section>
 
             <section id="cap4" class="cap-4">
-                <h2>CONTACT</h2>
+                <h2>CONTACTS</h2>
+                
+                <div class="contact-grid">
+                    <a href="https://github.com/DiogoCoutoooo" target="_blank" class="contact-item" style="cursor: none;">
+                        <span class="contact-label">DEVELOPER_PLATFORM</span>
+                        <span class="contact-value">GITHUB</span>
+                        <span class="contact-link-text">github.com/DiogoCoutoooo</span>
+                    </a>
+
+                    <a href="https://discord.com/users/994894277291290674" target="_blank" class="contact-item" style="cursor: none;">
+                        <span class="contact-label">COMMS_CHANNEL</span>
+                        <span class="contact-value">DISCORD</span>
+                        <span class="contact-link-text">@diogocoutoooo</span>
+                    </a>
+
+                    <a href="https://www.linkedin.com/in/diogocoutoooo" target="_blank" class="contact-item" style="cursor: none;">
+                        <span class="contact-label">PROFESSIONAL_NET</span>
+                        <span class="contact-value">LINKEDIN</span>
+                        <span class="contact-link-text">in/diogocoutoooo</span>
+                    </a>
+                </div>
+
                 <div class="sticky-bar" data-target="#cap4">
                     <div class="sticky-meta">
                         <span>0x03_COMM</span>
                         <div style="width: 30px; height: 1px; background: currentColor; opacity: 0.3;"></div>
                         <span>CHAN: ENCRYPTED</span>
                     </div>
-                    <button class="nav-button"><div class="arrow-up"></div><span>Send_Signal</span></button>
+                    <button class="nav-button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                        <div class="arrow-up"></div><span>Return_Home</span>
+                    </button>
                 </div>
             </section>
         </main>
@@ -1427,7 +1608,13 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                     duration: 0.8
                 }, 2.5);
 
-                // 5. Buffer de silêncio equilibrado
+                // 5. Esconder COMPLETAMENTE apenas depois de tudo desaparecer (evitar lag do rato)
+                tl.set([words, photo, consoleEl], {
+                    visibility: "hidden",
+                    pointerEvents: "none"
+                }, 3.3);
+
+                // 6. Buffer de silêncio equilibrado
                 tl.to({}, { duration: 2.0 }, 3.3);
 
                 // Animação do card removida temporariamente para garantir visibilidade

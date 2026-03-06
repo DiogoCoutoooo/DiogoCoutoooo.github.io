@@ -36,7 +36,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
 
 			body {
 				margin: 0;
-				background-color: #0d0d0d;
+				background-color: #131313;
 				color: #fff;
 				font-family: 'Syne', sans-serif;
 				overflow-x: hidden;
@@ -647,8 +647,6 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                                             </div>
                                         </div>
                                         <div class="htb-machine-meta">
-                                            <span><b>OS:</b> {machine.os}</span>
-                                            <span class="mobile-only-meta"><b>DIFFICULTY:</b> {machine.difficulty}</span>
                                             <span><b>Pwned:</b> {machine.pwnedDate}</span>
                                         </div>
                                         <p class="htb-description">{machine.description}</p>

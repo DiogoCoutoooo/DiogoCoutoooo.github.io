@@ -1,0 +1,394 @@
+---
+import GlobalEffects from '../components/GlobalEffects.astro';
+import challenges from '../data/ctf.json';
+---
+
+<html lang="pt" class="the_first_crack">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CTF | Diogo Couto</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@800&display=swap');
+
+            body {
+                margin: 0;
+                background-color: #131313;
+                color: #fff;
+                font-family: 'JetBrains Mono', monospace;
+                overflow-x: hidden;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 100px 3vw 120px; /* Sincronizado com a página HTB */
+                cursor: none;
+            }
+
+            .container {
+                max-width: 1650px; /* Sincronizado com a página HTB */
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 50px;
+            }
+
+            h1 {
+                font-family: 'Syne', sans-serif;
+                font-size: clamp(3rem, 9vw, 9rem);
+                margin: 0;
+                line-height: 0.9;
+                position: relative;
+                color: #fff;
+                text-transform: uppercase;
+                letter-spacing: -2px;
+            }
+
+            h1::before, h1::after {
+                content: "CAPTURE THE FLAG";
+                position: absolute;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            h1::before { color: #00ffff; z-index: -1; }
+            h1::after { color: #ff00ff; z-index: -2; }
+
+            .glitch-active::before {
+                opacity: 0.7;
+                animation: rgb-split-1 0.1s infinite alternate-reverse;
+            }
+            .glitch-active::after {
+                opacity: 0.7;
+                animation: rgb-split-2 0.1s infinite alternate;
+            }
+
+            @keyframes rgb-split-1 {
+                0% { transform: translate(-6px, -2px); }
+                100% { transform: translate(6px, 2px); }
+            }
+
+            @keyframes rgb-split-2 {
+                0% { transform: translate(6px, 2px); }
+                100% { transform: translate(-6px, -2px); }
+            }
+
+            .subtitle {
+                opacity: 0.6;
+                font-size: 0.9rem;
+                letter-spacing: 2px;
+            }
+
+            /* Terminal Style Challenge */
+            .challenge-card {
+                background: rgba(20, 20, 20, 0.8);
+                border: 1px solid rgba(154, 205, 50, 0.2);
+                padding: 30px;
+                border-radius: 4px;
+                position: relative;
+                overflow: hidden;
+                margin-bottom: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+
+            .challenge-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, #9acd32, transparent);
+                animation: scan 3s infinite linear;
+            }
+
+            @keyframes scan {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+            }
+
+            .tag-group {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .tag {
+                display: inline-block;
+                padding: 4px 12px;
+                background: rgba(154, 205, 50, 0.1);
+                color: #9acd32;
+                font-size: 0.7rem;
+                border-radius: 20px;
+                border: 1px solid rgba(154, 205, 50, 0.3);
+            }
+
+            h2 {
+                margin: 0 0 15px 0;
+                font-size: 1.5rem;
+                color: #fff;
+            }
+
+            p {
+                line-height: 1.6;
+                opacity: 0.8;
+                margin-bottom: 25px;
+            }
+
+            .input-group {
+                display: flex;
+                gap: 10px;
+                position: relative;
+            }
+
+            input {
+                flex: 1;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 12px 15px;
+                color: #9acd32;
+                font-family: 'JetBrains Mono', monospace;
+                border-radius: 4px;
+                outline: none;
+                transition: border-color 0.3s;
+            }
+
+            input:focus {
+                border-color: #9acd32;
+            }
+
+            button {
+                background: #9acd32;
+                color: #000;
+                border: none;
+                padding: 0 25px;
+                font-weight: 700;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: transform 0.2s, background 0.2s;
+            }
+
+            button:hover {
+                background: #9acd32;
+                transform: translateY(-2px);
+                box-shadow: 0 0 15px rgba(154, 205, 50, 0.4);
+            }
+
+            .message {
+                margin-top: 15px;
+                font-size: 0.85rem;
+                min-height: 1.2rem;
+                transition: color 0.3s;
+            }
+
+            .status-error { color: #ff3e3e; }
+            .status-success { color: #9acd32; font-weight: bold; }
+
+            /* Back link */
+            /* Sincronizado com .back-home da página HTB */
+            .back-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 60px;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.75rem;
+                color: #9acd32;
+                text-decoration: none;
+                letter-spacing: 0.2em;
+                text-transform: uppercase;
+                transition: all 0.3s;
+                cursor: none;
+                align-self: flex-start; /* Alinhado à esquerda como na HTB */
+            }
+
+            .back-link:hover { 
+                opacity: 0.7; 
+                transform: translateX(-4px); 
+                color: #9acd32;
+            }
+
+            .glitch-text {
+                position: relative;
+            }
+
+            /* Tooltip for hash generation */
+            .debug-info {
+                margin-top: 100px;
+                padding: 20px;
+                border-top: 1px dashed rgba(255, 255, 255, 0.1);
+                font-size: 0.7rem;
+                opacity: 0.3;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body class="the_first_crack">
+        <style is:global>
+			.the_first_crack {
+				--hint: "DECODE ASCII DEC TO STRING";
+				--off-28: "51";
+				--off-0: "67"; 
+				--off-17: "51"; 
+				--off-11: "111";
+				--off-3: "123";
+				--off-27: "119";
+				--off-5: "110"; 
+				--off-20: "48"; 
+				--off-8: "51"; 
+				--off-12: "114"; 
+				--off-30: "125";
+				--off-25: "51";
+				--off-15: "52";
+				--off-2: "70"; 
+				--off-4: "49"; 
+				--off-18: "116"; 
+				--off-9: "99"; 
+				--off-26: "95";
+				--off-19: "95";
+				--off-6: "115"; 
+				--off-22: "95";
+				--off-14: "71"; 
+				--off-16: "103"; 
+				--off-10: "116"; 
+				--off-7: "112";
+				--off-24: "104";
+				--off-21: "102"; 
+				--off-13: "95"; 
+				--off-1: "84"; 
+				--off-29: "98";
+				--off-23: "116";
+            }
+        </style>
+        <GlobalEffects />
+        
+        <div class="container">
+            <a href="/" class="back-link">
+                ← Terminal_Root
+            </a>
+            <header class="header">
+                <h1 class="glitch-text">CAPTURE THE FLAG</h1>
+                <p class="subtitle">DECRYPT // EXPLOIT // SUBMIT</p>
+            </header>
+
+            <main style="max-width: 900px; width: 100%;">
+                <!-- Challenges dynamically loaded from JSON -->
+                {challenges.map((challenge) => (
+                    <div class="challenge-card" id={`challenge-${challenge.id}`}>
+                        <div class="tag-group">
+                            <span class="tag">{challenge.category} // {challenge.difficulty}</span>
+                        </div>
+                        <h2>{challenge.title}</h2>
+                        <p set:html={challenge.description}></p>
+                        
+                        <div class="input-group">
+                            <input type="text" placeholder="CTF{...}" id={`flag-input-${challenge.id}`} autocomplete="off"/>
+                            <button class="submit-btn" data-id={challenge.id} data-hash={challenge.hash}>SUBMIT</button>
+                        </div>
+                        <div class="message" id={`message-${challenge.id}`}></div>
+                    </div>
+                ))}
+
+                {import.meta.env.DEV && (
+                    <div class="debug-info">
+                        <p>SYSTEM_SECURED: SHA-256 VALIDATION ACTIVE</p>
+                        <p id="hash-tool" style="cursor: pointer; text-decoration: underline;">Click here to generate a hash for a custom flag (Dev Only)</p>
+                    </div>
+                )}
+            </main>
+        </div>
+
+        <script>
+            import gsap from 'gsap';
+
+            // Glitch Effect for Title
+            const ctfTitle = document.querySelector('.glitch-text') as HTMLElement;
+
+            window.addEventListener('mousemove', (e) => {
+                if (ctfTitle && window.innerWidth > 768) {
+                    const moveX = (e.clientX - window.innerWidth / 2) / 30;
+                    const moveY = (e.clientY - window.innerHeight / 2) / 30;
+                    gsap.to(ctfTitle, { x: moveX, y: moveY, duration: 1 });
+                }
+            });
+
+            function triggerRandomGlitch() {
+                if (!ctfTitle) return;
+
+                ctfTitle.classList.add('glitch-active');
+
+                const glitchDuration = Math.random() * 200 + 100;
+                setTimeout(() => {
+                    ctfTitle.classList.remove('glitch-active');
+                    const nextGlitchIn = Math.random() * 3000 + 400;
+                    setTimeout(triggerRandomGlitch, nextGlitchIn);
+                }, glitchDuration);
+            }
+            
+            triggerRandomGlitch();
+
+            async function hashString(str: string) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(str);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            const buttons = document.querySelectorAll('.submit-btn');
+
+            buttons.forEach((btn) => {
+                btn.addEventListener('click', async (e) => {
+                    const targetBtn = e.currentTarget as HTMLButtonElement;
+                    const challengeId = targetBtn.getAttribute('data-id');
+                    const expectedHash = targetBtn.getAttribute('data-hash');
+
+                    const input = document.getElementById(`flag-input-${challengeId}`) as HTMLInputElement | null;
+                    const msg = document.getElementById(`message-${challengeId}`);
+
+                    if (!input || !msg || !expectedHash) return;
+
+                    const val = input.value.trim();
+                    if (!val) return;
+
+                    msg.innerText = "CHECKING_INTEGRITY...";
+                    msg.className = "message";
+
+                    const hashed = await hashString(val);
+                    
+                    setTimeout(() => {
+                        if (hashed === expectedHash) {
+                            msg.innerText = "ACCESS_GRANTED :: FLAG_VERIFIED";
+                            msg.className = "message status-success";
+                            input.style.borderColor = "#9acd32";
+                        } else {
+                            msg.innerText = "ACCESS_DENIED :: INVALID_HASH";
+                            msg.className = "message status-error";
+                            input.style.borderColor = "#ff3e3e";
+                        }
+                    }, 800);
+                });
+            });
+
+            const hashTool = document.getElementById('hash-tool');
+            if (hashTool) {
+                hashTool.addEventListener('click', async () => {
+                    const newFlag = prompt("Escreve a tua flag para gerar o hash:");
+                    if (newFlag) {
+                        const h = await hashString(newFlag);
+                        console.log("Flag:", newFlag);
+                        console.log("Hash SHA-256:", h);
+                        alert("Copiado para a consola!\nHash: " + h);
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>
