@@ -70,23 +70,5 @@
     },
     "folder": "Easy",
     "status": "PWNED"
-  },
-  {
-    "id": "keeper",
-    "title": "Keeper",
-    "os": "Linux",
-    "difficulty": "Easy",
-    "pwnedDate": "2000-01-01",
-    "avatar": "https://raw.githubusercontent.com/DiogoCoutoooo/Cybersec-Obsidian/main/Tought%20Process/!Media/!Logo_Keeper.png",
-    "description": "Write-up and thought process for Keeper.",
-    "matrix": {
-      "ENUM": 500,
-      "REAL": 500,
-      "CVE": 500,
-      "CUSTOM": 500,
-      "CTF": 500
-    },
-    "folder": "Easy",
-    "status": "Root Pwned"
   }
 ]
