@@ -307,7 +307,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
 			}
 
 			.bio-freeze-section {
-                height: 220vh; /* Reduzido para scroll mais rápido */
+                height: 180vh; /* Reduzido para scroll mais rápido */
                 background: transparent;
                 width: 100%;
                 position: relative;
@@ -394,7 +394,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                     margin-bottom: 5px;
                 }
                 .bio-freeze-section {
-                    height: 250dvh !important;
+                    height: 170dvh !important;
                 }
             }
 
@@ -836,14 +836,14 @@ const statusColors: Record<string, { bg: string, text: string }> = {
             }
 
             .chevron {
-                width: 14px;
-                height: 8px;
-                border-left: 2px solid #00ff41;
-                border-bottom: 2px solid #00ff41;
+                width: 20px;
+                height: 12px;
+                border-left: 3px solid #00ff41;
+                border-bottom: 3px solid #00ff41;
                 transform: rotate(-45deg);
                 opacity: 0;
                 animation: chevron-pulse 2s infinite ease-in-out;
-                filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.4));
+                filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.8));
             }
 
             .chevron:nth-child(2) { animation-delay: 0.2s; }
@@ -858,7 +858,8 @@ const statusColors: Record<string, { bg: string, text: string }> = {
 
             .scroll-label-glitch {
                 font-family: 'JetBrains Mono', monospace;
-                font-size: 0.6rem;
+                font-size: 0.8rem;
+                font-weight: 700;
                 letter-spacing: 0.4em;
                 color: #00ff41;
                 text-transform: uppercase;
@@ -866,6 +867,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
             }
 
             .scroll-label-glitch::before, .scroll-label-glitch::after {
@@ -1371,12 +1373,20 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                 // --- ANIMATION: BIO FREEZE REVEAL ---
                 const isMobile = window.innerWidth <= 768;
 
+                // 1. Pinning separado: só prende a secção quando o topo atingir o limite exato superior do ecrã (sítio certo)
+                ScrollTrigger.create({
+                    trigger: "#bio-trigger",
+                    start: "top top", 
+                    end: isMobile ? "+=1600" : "+=2000", 
+                    pin: true
+                });
+
+                // 2. Timeline da Animação: começa quando o topo da secção atinge os 85% do ecrã para preencher o "vazio" imediatamente
                 const tl = gsap.timeline({
                     scrollTrigger: {
                         trigger: "#bio-trigger",
-                        start: "top top", 
+                        start: "top 35%", 
                         end: isMobile ? "+=1600" : "+=2000", 
-                        pin: true,
                         scrub: 0.6,
                     }
                 });
@@ -1463,7 +1473,8 @@ const statusColors: Record<string, { bg: string, text: string }> = {
             window.addEventListener('scroll', () => {
                 const scrollIndicator = document.getElementById('scroll-indicator');
                 if (scrollIndicator) {
-                    if (window.scrollY > 100) {
+                    // Agora só desaparece quando dás scroll em mais de 70% da altura do teu ecrã
+                    if (window.scrollY > window.innerHeight * 0.7) {
                         scrollIndicator.classList.add('hidden');
                     } else {
                         scrollIndicator.classList.remove('hidden');
