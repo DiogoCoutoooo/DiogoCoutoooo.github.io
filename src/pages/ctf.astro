@@ -200,19 +200,22 @@ import challenges from '../data/ctf.json';
                 margin-bottom: 60px;
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 0.75rem;
-                color: #9acd32;
+                color: #9acd32 !important;
                 text-decoration: none;
                 letter-spacing: 0.2em;
                 text-transform: uppercase;
                 transition: all 0.3s;
                 cursor: none;
-                align-self: flex-start; /* Alinhado à esquerda como na HTB */
+                align-self: flex-start;
             }
 
             .back-link:hover { 
                 opacity: 0.7; 
                 transform: translateX(-4px); 
-                color: #9acd32;
+            }
+
+            .back-link, .back-link:visited, .back-link:active {
+                color: #9acd32 !important;
             }
 
             .glitch-text {
@@ -229,23 +232,32 @@ import challenges from '../data/ctf.json';
                 text-align: center;
             }
 
-            a, a:visited, a:active {
-                color: inherit;
-                text-decoration: none;
+            /* Garantir que links dentro do conteúdo dos desafios não fiquem azuis */
+            .challenge-card p a {
+                color: #fff;
+                text-decoration: underline;
+                transition: opacity 0.2s;
             }
 
-            .flag-attachment, .flag-attachment:visited {
+            .challenge-card p a:hover {
+                opacity: 0.7;
+            }
+
+            /* Estilo ultra-específico apenas para o link da FLAG do desafio 2 */
+            .challenge-card p a.flag-attachment, 
+            .challenge-card p a.flag-attachment:visited,
+            .challenge-card p a.flag-attachment:active {
                 color: #9acd32 !important;
-                text-decoration: underline;
-                text-decoration-style: dashed;
-                font-weight: bold;
+                text-decoration: underline !important;
+                text-decoration-style: dashed !important;
+                font-weight: bold !important;
+                opacity: 1 !important;
                 transition: all 0.3s;
             }
 
-            .flag-attachment:hover {
+            .challenge-card p a.flag-attachment:hover {
                 background: rgba(154, 205, 50, 0.1);
-                text-decoration-style: solid;
-                color: #9acd32 !important;
+                text-decoration-style: solid !important;
             }
         </style>
     </head>
@@ -290,9 +302,7 @@ import challenges from '../data/ctf.json';
         <GlobalEffects />
         
         <div class="container">
-            <a href="/" class="back-link">
-                ← Terminal_Root
-            </a>
+            <a href="/" class="back-link">← Terminal_Root</a>
             <header class="header">
                 <h1 class="glitch-text">CAPTURE THE FLAG</h1>
                 <p class="subtitle">DECRYPT // EXPLOIT // SUBMIT</p>

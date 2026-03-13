@@ -12,7 +12,7 @@
     "category": "OSINT",
     "difficulty": "LEVEL 2",
     "title": "Bomber War",
-    "description": "There was a bomber aircraft with a production run of nearly 1,000 units that was decommissioned almost 25 years after its maiden flight. <br/> Could you identify the name of this aircraft and use it as key to decipher this <a href=\"/attachments/challenge2.txt\" download=\"challenge2.txt\" class=\"flag-attachment\">FLAG</a>?",
+    "description": "There was a bomber aircraft with a production run of nearly 1,000 units that was decommissioned almost 25 years after its maiden flight. <br/> Could you identify the name of this aircraft and use it as key to decipher this <a href=\"/attachments/challenge2.txt\" download=\"challenge2.txt\" class=\"flag-attachment\">FLAG</a>? (Hint: The flag is encrypted using a XOR Cipher, and dont forget to add CTF{} around the flag)",
     "hash": "b763adeb3cd1c5df706defc0aa27ca474989775a28a9e79cfdbeea62f43ca199"
   }
 ]
