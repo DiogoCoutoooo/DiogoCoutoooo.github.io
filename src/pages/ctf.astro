@@ -228,6 +228,25 @@ import challenges from '../data/ctf.json';
                 opacity: 0.3;
                 text-align: center;
             }
+
+            a, a:visited, a:active {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .flag-attachment, .flag-attachment:visited {
+                color: #9acd32 !important;
+                text-decoration: underline;
+                text-decoration-style: dashed;
+                font-weight: bold;
+                transition: all 0.3s;
+            }
+
+            .flag-attachment:hover {
+                background: rgba(154, 205, 50, 0.1);
+                text-decoration-style: solid;
+                color: #9acd32 !important;
+            }
         </style>
     </head>
     <body class="the_first_crack">
@@ -280,8 +299,8 @@ import challenges from '../data/ctf.json';
             </header>
 
             <main style="max-width: 900px; width: 100%;">
-                <!-- Challenges dynamically loaded from JSON -->
-                {challenges.map((challenge) => (
+                <!-- Challenges dynamically loaded from JSON - Inverted order -->
+                {challenges.slice().reverse().map((challenge) => (
                     <div class="challenge-card" id={`challenge-${challenge.id}`}>
                         <div class="tag-group">
                             <span class="tag">{challenge.category} // {challenge.difficulty}</span>
