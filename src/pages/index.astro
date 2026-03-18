@@ -745,6 +745,16 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                 opacity: 1 !important;
 			}
 
+            .htb-card::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0;
+                width: 3px; height: 100%;
+                background: var(--diff-color, #9acd32);
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+
             @media (max-width: 768px) {
                 .htb-title {
                     font-size: 12vw !important;
@@ -757,10 +767,11 @@ const statusColors: Record<string, { bg: string, text: string }> = {
             }
 
 			.htb-card:hover {
-				background: rgba(255, 255, 255, 0.08);
-				border-color: #9acd32;
-				transform: translateY(-5px);
+				background: rgba(255, 255, 255, 0.03);
+				border-color: rgba(255, 255, 255, 0.15);
+				transform: translateY(-4px);
 			}
+            .htb-card:hover::before { opacity: 1; }
 
             .htb-card-info {
                 grid-area: info;
@@ -1209,7 +1220,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                 <div style="display: flex; flex-direction: column; gap: 40px; align-items: center; width: 100%; max-width: 1000px; margin: 0 auto;">
                     {displayMachines.map((machine) => (
                         <div class="htb-grid" style="width: 100%; display: flex; justify-content: center;">
-                            <div class="htb-card">
+                            <div class="htb-card" style={`--diff-color: ${difficultyColor[machine.difficulty]};`}>
                                 <div class="htb-card-info">
                                     <div class="htb-machine-header">
                                         <Image src={getMachineImage(machine.title, machine.avatar) as any} alt={machine.title} class="htb-machine-avatar" width={64} height={64} />
@@ -1237,7 +1248,7 @@ const statusColors: Record<string, { bg: string, text: string }> = {
                                     <canvas id={`chart-${machine.title.toLowerCase()}`} 
                                             data-matrix={JSON.stringify(machine.matrix)}></canvas>
                                 </div>
-                                <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup</a>
+                                <a href={`/htb/${machine.id}`} class="htb-view-btn">Ler Writeup →</a>
                             </div>
                         </div>
                     ))}

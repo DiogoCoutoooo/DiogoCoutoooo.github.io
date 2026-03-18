@@ -142,6 +142,10 @@ import challenges from '../data/ctf.json';
                 margin-bottom: 25px;
             }
 
+            .challenge-card p {
+                text-align: justify;
+            }
+
             .input-group {
                 display: flex;
                 gap: 10px;
@@ -232,8 +236,16 @@ import challenges from '../data/ctf.json';
                 text-align: center;
             }
 
-            /* Garantir que links dentro do conteúdo dos desafios não fiquem azuis */
-            .challenge-card p a {
+            /* Os estilos de links foram movidos para o bloco global abaixo para funcionarem com set:html */
+
+        </style>
+    </head>
+    <body class="the_first_crack">
+        <style is:global>
+            /* Garantir que links dentro do conteúdo dos desafios não fiquem azuis (injetados via set:html) */
+            .challenge-card p a,
+            .challenge-card p a:visited,
+            .challenge-card p a:active {
                 color: #fff;
                 text-decoration: underline;
                 transition: opacity 0.2s;
@@ -251,18 +263,17 @@ import challenges from '../data/ctf.json';
                 text-decoration: underline !important;
                 text-decoration-style: dashed !important;
                 font-weight: bold !important;
+                text-shadow: 0 0 8px rgba(154, 205, 50, 0.5);
                 opacity: 1 !important;
                 transition: all 0.3s;
             }
 
             .challenge-card p a.flag-attachment:hover {
                 background: rgba(154, 205, 50, 0.1);
+                text-shadow: 0 0 12px rgba(154, 205, 50, 0.8);
                 text-decoration-style: solid !important;
             }
-        </style>
-    </head>
-    <body class="the_first_crack">
-        <style is:global>
+
 			.the_first_crack {
 				--hint: "DECODE ASCII DEC TO STRING";
 				--char-29: "51";
