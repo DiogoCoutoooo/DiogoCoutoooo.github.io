@@ -1,18 +1,26 @@
 [
-  {
-    "id": 1,
-    "category": "WEB",
-    "difficulty": "LEVEL 1",
-    "title": "The First Crack",
-    "description": "\"Security is just an illusion if the door is ajar.\" <br/> Investigate my code or the guts of this page. Maybe the flag is hidden where you least expect it.",
-    "hash": "675718982bd0e627dbc9ac0a4c6cae35e34d07ada1ef01e8d68757e1b54dd3ff"
-  },
-  {
-	"id": 2,
-    "category": "OSINT",
-    "difficulty": "LEVEL 2",
-    "title": "Bomber War",
-    "description": "There was a bomber aircraft with a production run of nearly 1,000 units that was decommissioned almost 25 years after its maiden flight. <br/> Could you identify the model name of this aircraft and use it as key to decipher this <a href=\"/attachments/challenge2.txt\" download=\"challenge2.txt\" class=\"flag-attachment\">FLAG</a>? (Hint: The flag is encrypted using a XOR Cipher, and dont forget to add CTF{} around the flag)",
-    "hash": "b763adeb3cd1c5df706defc0aa27ca474989775a28a9e79cfdbeea62f43ca199"
-  }
+	{
+		"id": 1,
+		"category": "WEB",
+		"difficulty": "LEVEL 1",
+		"title": "The First Crack",
+		"description": "\"Security is just an illusion if the door is ajar.\" <br/> Investigate my code or the guts of this page. Maybe the flag is hidden where you least expect it.",
+		"hash": "675718982bd0e627dbc9ac0a4c6cae35e34d07ada1ef01e8d68757e1b54dd3ff"
+	},
+	{
+		"id": 2,
+		"category": "OSINT",
+		"difficulty": "LEVEL 2",
+		"title": "Bomber War",
+		"description": "There was a bomber aircraft with a production run of nearly 1,000 units that was decommissioned almost 25 years after its maiden flight. <br/> Could you identify the model name of this aircraft and use it as key to decipher this <a href=\"/attachments/challenge2.txt\" download=\"bomber_war.txt\" class=\"flag-attachment\">text</a>? (Hint: The text is encrypted using a XOR Cipher, and don't forget to add CTF{} around the flag)",
+		"hash": "b763adeb3cd1c5df706defc0aa27ca474989775a28a9e79cfdbeea62f43ca199"
+	},
+	{
+		"id": 3,
+		"category": "FORENSICS",
+		"difficulty": "LEVEL 2",
+		"title": "Chirping Bird",
+		"description": "My dog won't stop barking at the birds outside. What is bothering him? <br/> Maybe you can find out by analyzing this <a href=\"/attachments/chirping_bird.wav\" download=\"chirping_bird.wav\" class=\"flag-attachment\">recording</a> of his barks. (Hint: The flag is all in uppercase)",
+		"hash": "928ac0b9ed1a314c8d7ba8fa32ef9a089313af0c20f9a9e968b3b3b9ec857378"
+	}
 ]
